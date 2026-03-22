@@ -53,6 +53,12 @@ export async function PATCH(
     return NextResponse.json({ error: "Match not found." }, { status: 404 });
   }
 
+  // For round_robin format, mark complete when all matches are done
+  if (tournament.format === "round_robin") {
+    const allDone = tournament.pools.every((p) => p.matches.every((m) => m.complete));
+    if (allDone) tournament.status = "complete";
+  }
+
   saveTournament(tournament);
   return NextResponse.json(tournament);
 }

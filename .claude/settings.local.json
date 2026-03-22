@@ -4,7 +4,10 @@
       "mcp__perplexity__perplexity_ask",
       "Bash(npm run:*)",
       "Bash(curl:*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(node scripts/e2e-test.mjs)",
+      "Bash(node scripts/e2e-rr-test.mjs)",
+      "Bash(node scripts/e2e-large-test.mjs)"
     ]
   }
 }

@@ -3,7 +3,7 @@
 **Project:** Hoshu Dojo Taikai Manager
 **Owner:** Tom Groendal
 **Date:** 2026-03-22
-**Status:** Phase 2 in progress (Phase 0 and Phase 1 complete)
+**Status:** Phase 3 next (Phases 0, 1, and 2 complete)
 
 ---
 
@@ -170,7 +170,7 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Mouseover tooltip explaining why that player won
 - Organizer URL (secret) vs. public display URL split
 
-**Phase 2 — Elimination Bracket** · 🔄 Next · — Not tested
+**Phase 2 — Elimination Bracket** · ✅ Complete · — Not tested
 
 - Detect when all pool matches are complete
 - Auto-generate single-elimination bracket (top 1 per pool advances)
@@ -180,7 +180,7 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Score entry for each elimination match, same as pool play
 - Final report: full results, flag totals, bracket outcomes, printable
 
-**Phase 3 — Deploy to Vercel** · ⬜ Not started · — Not tested
+**Phase 3 — Deploy to Vercel** · 🔄 Next · — Not tested
 
 - Connect GitHub repo to Vercel (auto-deploy on push)
 - Swap local JSON storage for Upstash Redis via Vercel Marketplace (JSON blobs by UUID key, free tier)
