@@ -459,12 +459,36 @@ function BracketSection({
 // ─── Final report ─────────────────────────────────────────────────────────────
 
 function FinalReport({ tournament }: { tournament: Tournament }) {
+  const finalMatch = tournament.eliminationMatches.find(
+    (m) => !m.advancesToMatchId
+  );
+
+  // Champion: winner of the final (bracket) or top of pool (round_robin)
   const champion = (() => {
-    const finalMatch = tournament.eliminationMatches.find(
-      (m) => !m.advancesToMatchId
-    );
-    if (!finalMatch?.winnerId) return null;
-    return tournament.players.find((p) => p.id === finalMatch.winnerId);
+    if (finalMatch?.winnerId) {
+      return tournament.players.find((p) => p.id === finalMatch.winnerId) ?? null;
+    }
+    if (tournament.format === "round_robin" && tournament.pools.length > 0) {
+      const standings = computeStandings(tournament.pools[0], tournament.players, tournament.id);
+      return tournament.players.find((p) => p.id === standings[0]?.playerId) ?? null;
+    }
+    return null;
+  })();
+
+  // Champion rationale line
+  const championRationale = (() => {
+    if (finalMatch?.winnerId && finalMatch.flagsP1 !== null) {
+      const opponent = tournament.players.find(
+        (p) => p.id === (finalMatch.winnerId === finalMatch.player1Id ? finalMatch.player2Id : finalMatch.player1Id)
+      );
+      const winnerFlags = finalMatch.winnerId === finalMatch.player1Id ? finalMatch.flagsP1 : finalMatch.flagsP2;
+      const loserFlags  = finalMatch.winnerId === finalMatch.player1Id ? finalMatch.flagsP2 : finalMatch.flagsP1;
+      return `Won the final ${winnerFlags}–${loserFlags} against ${opponent?.name ?? "?"}`;
+    }
+    if (tournament.format === "round_robin" && tournament.pools.length > 0) {
+      return computeWinReason(tournament.pools[0], tournament.players, tournament.id);
+    }
+    return null;
   })();
 
   const roundCount = tournament.eliminationMatches.length > 0
@@ -473,14 +497,19 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
 
   return (
     <div className="space-y-6 print:space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between print:hidden">
         <h2 className="text-xl font-bold text-gray-800">Final Report</h2>
         <button
           onClick={() => window.print()}
-          className="text-sm text-blue-600 hover:underline print:hidden"
+          className="text-sm text-blue-600 hover:underline"
         >
           Print ↗
         </button>
+      </div>
+      {/* Report title shown only when printing */}
+      <div className="hidden print:block">
+        <h2 className="text-xl font-bold text-gray-800">{tournament.name} — Final Report</h2>
+        <p className="text-sm text-gray-500">{tournament.date}</p>
       </div>
 
       {champion && (
@@ -489,12 +518,16 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
             Champion
           </p>
           <p className="text-2xl font-bold text-yellow-900">{champion.name}</p>
+          {championRationale && (
+            <p className="text-sm text-yellow-700 mt-1">{championRationale}</p>
+          )}
         </div>
       )}
 
       {/* Pool results */}
       {tournament.pools.map((pool) => {
         const standings = computeStandings(pool, tournament.players, tournament.id);
+        const winReason = computeWinReason(pool, tournament.players, tournament.id);
         return (
           <div key={pool.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100 bg-gray-50">
@@ -520,6 +553,11 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
                 ))}
               </tbody>
             </table>
+            {standings.length > 0 && (
+              <p className="px-5 py-2 text-xs text-gray-400 border-t border-gray-50">
+                {standings[0].playerName} advances — {winReason}
+              </p>
+            )}
           </div>
         );
       })}
@@ -551,20 +589,17 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
                         const p1 = tournament.players.find((p) => p.id === match.player1Id);
                         const p2 = tournament.players.find((p) => p.id === match.player2Id);
                         const winner = tournament.players.find((p) => p.id === match.winnerId);
+                        const loser  = match.winnerId === match.player1Id ? p2 : p1;
+                        const winnerFlags = match.winnerId === match.player1Id ? match.flagsP1 : match.flagsP2;
+                        const loserFlags  = match.winnerId === match.player1Id ? match.flagsP2 : match.flagsP1;
                         return (
                           <div key={match.id} className="px-5 py-3 flex items-center justify-between text-sm">
                             <span className="text-gray-800">
-                              <span className={match.winnerId === match.player1Id ? "font-bold" : ""}>
-                                {p1?.name ?? "?"}
-                              </span>
-                              <span className="text-gray-400"> vs </span>
-                              <span className={match.winnerId === match.player2Id ? "font-bold" : ""}>
-                                {p2?.name ?? "?"}
-                              </span>
+                              {p1?.name ?? "?"} vs {p2?.name ?? "?"}
                             </span>
-                            <span className="text-gray-500 text-xs">
+                            <span className="text-gray-600 text-xs">
                               {match.flagsP1 !== null
-                                ? `${match.flagsP1}–${match.flagsP2} · ${winner?.name ?? "?"} wins`
+                                ? `${winner?.name ?? "?"} won ${winnerFlags}–${loserFlags} against ${loser?.name ?? "?"}`
                                 : "—"}
                             </span>
                           </div>
@@ -658,56 +693,59 @@ export default function ManageClient({
     tournament.pools.every((p) => p.matches.every((m) => m.complete));
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
+    <main className="min-h-screen bg-gray-50 p-6 print:bg-white print:p-0">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{tournament.name}</h1>
-            <p className="text-sm text-gray-500">{tournament.date}</p>
+        {/* Everything except the final report is hidden when printing */}
+        <div className="print:hidden space-y-6">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{tournament.name}</h1>
+              <p className="text-sm text-gray-500">{tournament.date}</p>
+            </div>
+            <a
+              href={publicUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:underline whitespace-nowrap"
+            >
+              Public view ↗
+            </a>
           </div>
-          <a
-            href={publicUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-600 hover:underline whitespace-nowrap"
-          >
-            Public view ↗
-          </a>
+
+          {/* Format info */}
+          <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-3 text-sm text-blue-800">
+            {formatLabel}
+          </div>
+
+          {/* Pools */}
+          {tournament.pools.map((pool) => (
+            <PoolSection
+              key={pool.id}
+              pool={pool}
+              tournament={tournament}
+              onUpdate={handleUpdate}
+            />
+          ))}
+
+          {/* Generate bracket prompt */}
+          {allPoolsDone && (
+            <GenerateBracketButton
+              tournament={tournament}
+              onUpdate={handleUpdate}
+            />
+          )}
+
+          {/* Elimination bracket */}
+          {tournament.eliminationMatches.length > 0 && (
+            <BracketSection
+              tournament={tournament}
+              onUpdate={handleUpdate}
+            />
+          )}
         </div>
 
-        {/* Format info */}
-        <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-3 text-sm text-blue-800">
-          {formatLabel}
-        </div>
-
-        {/* Pools */}
-        {tournament.pools.map((pool) => (
-          <PoolSection
-            key={pool.id}
-            pool={pool}
-            tournament={tournament}
-            onUpdate={handleUpdate}
-          />
-        ))}
-
-        {/* Generate bracket prompt */}
-        {allPoolsDone && (
-          <GenerateBracketButton
-            tournament={tournament}
-            onUpdate={handleUpdate}
-          />
-        )}
-
-        {/* Elimination bracket */}
-        {tournament.eliminationMatches.length > 0 && (
-          <BracketSection
-            tournament={tournament}
-            onUpdate={handleUpdate}
-          />
-        )}
-
-        {/* Final report */}
+        {/* Final report — visible on screen and when printing */}
         {tournament.status === "complete" && (
           <FinalReport tournament={tournament} />
         )}

@@ -181,22 +181,32 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
   const finalMatch = tournament.eliminationMatches.find(
     (m) => !m.advancesToMatchId
   );
-  const champion = finalMatch?.winnerId
-    ? tournament.players.find((p) => p.id === finalMatch.winnerId)
-    : (() => {
-        // round_robin: top of the single pool
-        if (tournament.format === "round_robin" && tournament.pools.length > 0) {
-          const standings = computeStandings(
-            tournament.pools[0],
-            tournament.players,
-            tournament.id
-          );
-          if (standings.length > 0) {
-            return tournament.players.find((p) => p.id === standings[0].playerId);
-          }
-        }
-        return null;
-      })();
+
+  const champion = (() => {
+    if (finalMatch?.winnerId) {
+      return tournament.players.find((p) => p.id === finalMatch.winnerId) ?? null;
+    }
+    if (tournament.format === "round_robin" && tournament.pools.length > 0) {
+      const standings = computeStandings(tournament.pools[0], tournament.players, tournament.id);
+      return tournament.players.find((p) => p.id === standings[0]?.playerId) ?? null;
+    }
+    return null;
+  })();
+
+  const championRationale = (() => {
+    if (finalMatch?.winnerId && finalMatch.flagsP1 !== null) {
+      const opponent = tournament.players.find(
+        (p) => p.id === (finalMatch.winnerId === finalMatch.player1Id ? finalMatch.player2Id : finalMatch.player1Id)
+      );
+      const winnerFlags = finalMatch.winnerId === finalMatch.player1Id ? finalMatch.flagsP1 : finalMatch.flagsP2;
+      const loserFlags  = finalMatch.winnerId === finalMatch.player1Id ? finalMatch.flagsP2 : finalMatch.flagsP1;
+      return `Won the final ${winnerFlags}–${loserFlags} against ${opponent?.name ?? "?"}`;
+    }
+    if (tournament.format === "round_robin" && tournament.pools.length > 0) {
+      return computeWinReason(tournament.pools[0], tournament.players, tournament.id);
+    }
+    return null;
+  })();
 
   const roundCount = tournament.eliminationMatches.length > 0
     ? Math.max(...tournament.eliminationMatches.map((m) => m.round))
@@ -204,17 +214,27 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
 
   return (
     <div className="space-y-6">
+      {/* Report title shown only when printing */}
+      <div className="hidden print:block">
+        <h2 className="text-xl font-bold text-gray-800">{tournament.name} — Final Report</h2>
+        <p className="text-sm text-gray-500">{tournament.date}</p>
+      </div>
+
       {champion && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-5 py-4 text-center">
           <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide mb-1">
             Champion
           </p>
           <p className="text-2xl font-bold text-yellow-900">{champion.name}</p>
+          {championRationale && (
+            <p className="text-sm text-yellow-700 mt-1">{championRationale}</p>
+          )}
         </div>
       )}
 
       {tournament.pools.map((pool) => {
         const standings = computeStandings(pool, tournament.players, tournament.id);
+        const winReason = computeWinReason(pool, tournament.players, tournament.id);
         return (
           <div key={pool.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100 bg-gray-50">
@@ -240,6 +260,11 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
                 ))}
               </tbody>
             </table>
+            {standings.length > 0 && (
+              <p className="px-5 py-2 text-xs text-gray-400 border-t border-gray-50">
+                {standings[0].playerName} advances — {winReason}
+              </p>
+            )}
           </div>
         );
       })}
@@ -270,20 +295,17 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
                         const p1 = tournament.players.find((p) => p.id === match.player1Id);
                         const p2 = tournament.players.find((p) => p.id === match.player2Id);
                         const winner = tournament.players.find((p) => p.id === match.winnerId);
+                        const loser  = match.winnerId === match.player1Id ? p2 : p1;
+                        const winnerFlags = match.winnerId === match.player1Id ? match.flagsP1 : match.flagsP2;
+                        const loserFlags  = match.winnerId === match.player1Id ? match.flagsP2 : match.flagsP1;
                         return (
                           <div key={match.id} className="px-5 py-3 flex items-center justify-between text-sm">
                             <span className="text-gray-800">
-                              <span className={match.winnerId === match.player1Id ? "font-bold" : ""}>
-                                {p1?.name ?? "?"}
-                              </span>
-                              <span className="text-gray-400"> vs </span>
-                              <span className={match.winnerId === match.player2Id ? "font-bold" : ""}>
-                                {p2?.name ?? "?"}
-                              </span>
+                              {p1?.name ?? "?"} vs {p2?.name ?? "?"}
                             </span>
-                            <span className="text-gray-500 text-xs">
+                            <span className="text-gray-600 text-xs">
                               {match.flagsP1 !== null
-                                ? `${match.flagsP1}–${match.flagsP2} · ${winner?.name ?? "?"} wins`
+                                ? `${winner?.name ?? "?"} won ${winnerFlags}–${loserFlags} against ${loser?.name ?? "?"}`
                                 : "—"}
                             </span>
                           </div>
@@ -331,47 +353,50 @@ export default function ViewClient({
   const topLabel = tournament.format === "round_robin" ? "Winner" : "Advances";
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
+    <main className="min-h-screen bg-gray-50 p-6 print:bg-white print:p-0">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{tournament.name}</h1>
-          <p className="text-sm text-gray-500">
-            {tournament.date} · Live standings
+        {/* Everything except the final report is hidden when printing */}
+        <div className="print:hidden space-y-6">
+          {/* Header */}
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{tournament.name}</h1>
+            <p className="text-sm text-gray-500">
+              {tournament.date} · Live standings
+            </p>
+          </div>
+
+          {/* Pool standings */}
+          {tournament.pools.map((pool) => {
+            const rows = computeStandings(pool, tournament.players, tournament.id);
+            const winReason = computeWinReason(pool, tournament.players, tournament.id);
+            const poolComplete = pool.matches.every((m) => m.complete);
+            return (
+              <StandingsTable
+                key={pool.id}
+                rows={rows}
+                poolName={pool.name}
+                topLabel={topLabel}
+                winTooltip={`${topLabel}: ${winReason}`}
+                poolComplete={poolComplete}
+              />
+            );
+          })}
+
+          {/* Elimination bracket */}
+          {tournament.eliminationMatches.length > 0 && tournament.status !== "complete" && (
+            <BracketSection tournament={tournament} />
+          )}
+
+          {/* Last updated */}
+          <p className="text-center text-xs text-gray-300">
+            Updated {lastUpdated.toLocaleTimeString()}
           </p>
         </div>
 
-        {/* Pool standings */}
-        {tournament.pools.map((pool) => {
-          const rows = computeStandings(pool, tournament.players, tournament.id);
-          const winReason = computeWinReason(pool, tournament.players, tournament.id);
-          const poolComplete = pool.matches.every((m) => m.complete);
-          return (
-            <StandingsTable
-              key={pool.id}
-              rows={rows}
-              poolName={pool.name}
-              topLabel={topLabel}
-              winTooltip={`${topLabel}: ${winReason}`}
-              poolComplete={poolComplete}
-            />
-          );
-        })}
-
-        {/* Elimination bracket */}
-        {tournament.eliminationMatches.length > 0 && tournament.status !== "complete" && (
-          <BracketSection tournament={tournament} />
-        )}
-
-        {/* Final report when tournament is complete */}
+        {/* Final report — visible on screen and when printing */}
         {tournament.status === "complete" && (
           <FinalReport tournament={tournament} />
         )}
-
-        {/* Last updated */}
-        <p className="text-center text-xs text-gray-300">
-          Updated {lastUpdated.toLocaleTimeString()}
-        </p>
       </div>
     </main>
   );

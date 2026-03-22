@@ -2,7 +2,7 @@
   "id": "c969173e-2631-4393-9dc6-e281ba1d7138",
   "name": "sadf",
   "date": "2026-03-22",
-  "status": "pool_play",
+  "status": "complete",
   "format": "pools_elimination",
   "players": [
     {
@@ -284,6 +284,21 @@
       ]
     }
   ],
-  "eliminationMatches": [],
+  "eliminationMatches": [
+    {
+      "id": "em_1",
+      "round": 1,
+      "position": 1,
+      "player1Id": "d2492e1a-e1db-47eb-8768-f2e59b619a22",
+      "player2Id": "83127b9a-3e74-4008-aaef-759944c60cb2",
+      "player1Source": "pool:A:1",
+      "player2Source": "pool:B:1",
+      "flagsP1": 3,
+      "flagsP2": 0,
+      "winnerId": "d2492e1a-e1db-47eb-8768-f2e59b619a22",
+      "advancesToMatchId": null,
+      "advancesToSlot": null
+    }
+  ],
   "createdAt": "2026-03-22T21:25:27.239Z"
 }
