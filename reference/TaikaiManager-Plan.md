@@ -32,9 +32,19 @@ During the **elimination bracket** (9+ participants only), flags are still recor
 When two or more players have the same total flag count:
 1. Head-to-head flag count in the direct match between tied players
 2. Flag differential (flags scored minus flags conceded) across all their pool matches
-3. Draw of lots
+3. Automated draw of lots (see below)
 
 **This must be announced before the tournament begins.**
+
+### Automated Draw of Lots
+
+When tiebreakers 1 and 2 are exhausted, the app resolves the tie automatically using a randomized rock-paper-scissors simulation. The software generates a random throw for each tied player, resolves the result, and displays an announcement:
+
+> *"Bob and Sarah were tied for the last position in the elimination round. Randomized results gave Bob rock and Sarah scissors. Bob advances to the elimination round. Better luck next time, Sarah!"*
+
+This mechanism is used for:
+- Determining pool standings when flags and differential are equal
+- Assigning byes in the elimination bracket when seeding is otherwise equal
 
 ---
 
@@ -43,13 +53,13 @@ When two or more players have the same total flag count:
 | Participants | Format |
 |---|---|
 | 4–8 | Single pool, pure round-robin. Final ranking = total flags. No elimination bracket. |
-| 9–16 | 2–3 pools of 4–5. Round-robin within each pool. Top 2 per pool advance to single-elimination finals. |
-| 17–30 | 4–6 pools of 4–5. Same structure, larger elimination bracket. |
+| 9–16 | 2–3 pools of 4–5. Round-robin within each pool. **Top 1 per pool** advances to single-elimination finals. |
+| 17–30 | 4–6 pools of 4–5. Same structure, larger elimination bracket. **Top 1 per pool** advances. |
 
 - Pool sizes are kept within ±1 person of each other.
 - Players are randomly assigned to pools.
 - Pool schedule is generated using the **circle method**: fix one player, rotate the rest clockwise each round. Produces N-1 rounds covering all pairings exactly once.
-- Elimination bracket is cross-seeded: Pool A winner vs. Pool B runner-up, Pool B winner vs. Pool A runner-up. This prevents pool-mates from meeting before the final.
+- Elimination bracket seeds players by pool ranking (flags → flag differential → automated RPS). The bracket size rounds up to the next power of 2; extra slots are filled with **byes**, awarded to the highest seeds. Cross-seeding is applied where possible so pool-mates don't meet until the final.
 
 ---
 
@@ -116,9 +126,22 @@ Match
   flags for player 1, flags for player 2
   complete (true/false)
 
-EliminationBracket (generated after pool play)
-  rounds, matchups, results
+EliminationMatch (one row per match in the bracket)
+  id                     (e.g. "em_1", "em_2", ...)
+  round                  (1 = first round, 2 = semifinals, 3 = final, etc.)
+  position               (1-based slot within the round; determines left/right placement in bracket display)
+  player1_id             (null until known — filled in when the source match completes or on bracket generation)
+  player2_id             (null until known)
+  player1_source         (where player1 comes from: "pool:A:1" = Pool A winner, "match:em_3:winner" = winner of match em_3, "bye" = automatic advance)
+  player2_source         (same pattern)
+  flags_p1               (null until scored)
+  flags_p2               (null until scored)
+  winner_id              (null until complete)
+  advances_to_match_id   (ID of the next match the winner feeds into; null for the final)
+  advances_to_slot       (1 or 2 — which player slot in the next match the winner fills)
 ```
+
+The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define the tree structure explicitly. When a match completes, the app looks up `advances_to_match_id` and sets `player{advances_to_slot}_id` on that match. The display layer renders the bracket by walking these links — each match knows its children (sources) and its parent (advances_to).
 
 ---
 
@@ -137,8 +160,9 @@ EliminationBracket (generated after pool play)
 *Goal: a complete round for a small group*
 
 - Score entry UI: per-match flag count entry (works on phone)
-- Live leaderboard: flag totals update immediately when scores are entered
-- Tiebreaker logic
+- Score editing: organizer can correct any previously entered score at any time; standings recalculate immediately
+- Live leaderboard: flag totals update on a polling interval (every 5–10 seconds); public display re-fetches automatically
+- Tiebreaker logic (flags → flag differential → automated RPS)
 - Organizer vs. public URL split (same data, different permissions)
 - Basic responsive styling
 
@@ -155,8 +179,8 @@ EliminationBracket (generated after pool play)
 
 - ~~Push codebase to GitHub~~ (done — `github.com/Hoshu-Dojo/taikai-manager`)
 - Connect repository to Vercel (automatic via GitHub integration)
-- Swap local JSON file storage for **Vercel KV** (hosted Redis key-value store; stores tournament data as JSON blobs by UUID key; free tier)
-  - This is a small code change: replace file read/write with KV get/set
+- Swap local JSON file storage for **Upstash Redis** (via the Vercel Marketplace; stores tournament data as JSON blobs by UUID key; free tier) — Vercel KV was deprecated in 2025 and replaced with this direct marketplace integration
+  - This is a small code change: replace file read/write with Redis get/set using the `@upstash/redis` client
 - Add `taikai.hoshudojo.com` subdomain via a DNS CNAME record in **Squarespace Domains** (hoshudojo.com DNS migrated there when Google sold Google Domains to Squarespace in 2023)
 - End-to-end test with a real tournament simulation
 
@@ -172,7 +196,7 @@ EliminationBracket (generated after pool play)
 ### Phase 5 — Robust (Future)
 *Goal: multi-event history and additional formats*
 
-- Replace Vercel KV with **PostgreSQL via Neon** (Vercel's hosted Postgres, free tier)
+- Replace Upstash Redis with **PostgreSQL via Neon** (available through the Vercel Marketplace, free tier)
   - Enables: tournament history, search, analytics, multiple organizer accounts
 - Traditional single-elimination bracket format as an alternative option
 - Grade-based divisions (optional subdivision by rank)
@@ -210,7 +234,7 @@ This means zero risk to the existing site.
 | Post-pool format | Single-elimination bracket (skipped for ≤8 participants) |
 | Auth model | UUID secret link (no accounts) |
 | Mobile support | Mobile-first from Phase 1; full courtside use by Phase 4 |
-| Storage progression | JSON (local) → Vercel KV (live) → PostgreSQL (robust) |
+| Storage progression | JSON (local) → Upstash Redis via Vercel Marketplace (live) → PostgreSQL (robust) |
 
 ---
 
