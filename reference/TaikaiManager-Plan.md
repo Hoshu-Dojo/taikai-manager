@@ -159,7 +159,7 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 ### Phase 1 — Core Features (Local)
 *Goal: a complete round for a small group*
 
-- Score entry UI: per-match flag count entry (works on phone)
+- Score entry UI: per-match flag count entry (works on phone); match schedule displayed as rounds (Round 1, Round 2, …), each match shown as a card the organizer taps to enter a score
 - Score editing: organizer can correct any previously entered score at any time; standings recalculate immediately
 - Live leaderboard: flag totals update on a polling interval (every 5–10 seconds); public display re-fetches automatically
 - Tiebreaker logic (flags → flag differential → automated RPS)
