@@ -3,7 +3,7 @@
 **Project:** Hoshu Dojo Taikai Manager
 **Owner:** Tom Groendal
 **Date:** 2026-03-22
-**Status:** Planning
+**Status:** Phase 2 in progress (Phase 0 and Phase 1 complete)
 
 ---
 
@@ -151,24 +151,37 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 
 ## Phased Development Plan
 
-### Phase 0 — Foundation (Local)
+| Phase | Name | Goal | Status | Tested |
+| --- | --- | --- | --- | --- |
+| 0 | Foundation | Runnable app with core data model | ✅ Complete | ✅ |
+| 1 | Core Features | Score entry, live leaderboard, tiebreakers | ✅ Complete | ✅ |
+| 2 | Elimination Bracket | Full tournament end-to-end (pools → finals) | 🔄 Next | — |
+| 3 | Deploy to Vercel | Live on the internet, Upstash Redis storage | ⬜ Not started | — |
+| 4 | Hoshu Dojo Branding | App looks and feels like part of the dojo | ⬜ Not started | — |
+| 5 | Polish | Production-quality for a real event | ⬜ Not started | — |
+| 6 | Robust | Multi-event history, Postgres, additional formats | ⬜ Future | — |
+
+---
+
+### ~~Phase 0 — Foundation (Local)~~ ✅ Complete
 *Goal: runnable app with core data model*
 
-- Set up Next.js project with TypeScript and Tailwind
-- Define data types for Tournament, Player, Pool, Match
-- Build tournament creation: name entry, participant list, auto format selection
-- Build pool generation: random assignment, circle-method schedule generator
-- Storage: JSON files on local disk (dead simple, dev only)
+- ~~Set up Next.js project with TypeScript and Tailwind~~
+- ~~Define data types for Tournament, Player, Pool, Match~~
+- ~~Build tournament creation: name entry, participant list, auto format selection~~
+- ~~Build pool generation: random assignment, circle-method schedule generator~~
+- ~~Storage: JSON files on local disk (dead simple, dev only)~~
 
-### Phase 1 — Core Features (Local)
+### ~~Phase 1 — Core Features (Local)~~ ✅ Complete
 *Goal: a complete round for a small group*
 
-- Score entry UI: per-match flag count entry (works on phone); match schedule displayed as rounds (Round 1, Round 2, …), each match shown as a card the organizer taps to enter a score
-- Score editing: organizer can correct any previously entered score at any time; standings recalculate immediately
-- Live leaderboard: flag totals update on a polling interval (every 5–10 seconds); public display re-fetches automatically
-- Tiebreaker logic (flags → flag differential → automated RPS)
-- Organizer vs. public URL split (same data, different permissions)
-- Basic responsive styling
+- ~~Score entry UI: per-match flag count entry (works on phone); match schedule displayed as rounds (Round 1, Round 2, …), each match shown as a card the organizer taps to enter a score~~
+- ~~Score editing: organizer can correct any previously entered score at any time; standings recalculate immediately~~
+- ~~Live leaderboard: flag totals update on a polling interval (every 5–10 seconds); public display re-fetches automatically~~
+- ~~Tiebreaker logic (flags → head-to-head → virtual jankenpon RPS); flag pip visualization in standings~~
+- ~~Organizer vs. public URL split (same data, different permissions)~~
+- ~~Winner/Advances badge with mouseover explanation, hidden until pool is complete~~
+- ~~Basic responsive styling~~
 
 ### Phase 2 — Elimination Bracket (Local)
 *Goal: full tournament end-to-end*
@@ -179,6 +192,7 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Final report: full results, flag totals, bracket outcomes, printable
 
 ### Phase 3 — Deploy to Vercel
+
 *Goal: live on the internet*
 
 - ~~Push codebase to GitHub~~ (done — `github.com/Hoshu-Dojo/taikai-manager`)
@@ -188,7 +202,18 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Add `taikai.hoshudojo.com` subdomain via a DNS CNAME record in **Squarespace Domains** (hoshudojo.com DNS migrated there when Google sold Google Domains to Squarespace in 2023)
 - End-to-end test with a real tournament simulation
 
-### Phase 4 — Polish
+### Phase 4 — Hoshu Dojo Branding
+
+*Goal: app looks and feels like part of the dojo's ecosystem*
+
+- Apply Hoshu Dojo color palette and typography to match hoshudojo.com
+- Add the Hoshu Dojo logo to the header of the manage and public view pages
+- Style the home/creation page to feel consistent with the main site
+- Add a "Taikai" link to the hoshudojo.com site navigation (one-line edit to the main site)
+- **Assets:** Tom will supply logo file (SVG or PNG preferred); color palette and fonts can be extracted from hoshudojo.com if needed
+
+### Phase 5 — Polish
+
 *Goal: production-quality for a real event*
 
 - Mobile-first refinements for score entry (large buttons, no misclicks at courtside)
@@ -199,7 +224,8 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - QR code on organizer screen linking to public display
 - Better error handling and recovery (e.g., correct a score you entered wrong)
 
-### Phase 5 — Robust (Future)
+### Phase 6 — Robust (Future)
+
 *Goal: multi-event history and additional formats*
 
 - Replace Upstash Redis with **PostgreSQL via Neon** (available through the Vercel Marketplace, free tier)
