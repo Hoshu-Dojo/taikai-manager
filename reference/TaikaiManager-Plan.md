@@ -57,8 +57,8 @@ This mechanism is used for:
 | Participants | Format |
 |---|---|
 | 4–8 | Single pool, pure round-robin. Final ranking = total flags. No elimination bracket. |
-| 9–16 | 2–3 pools of 4–5. Round-robin within each pool. **Top 1 per pool** advances to single-elimination finals. |
-| 17–30 | 4–6 pools of 4–5. Same structure, larger elimination bracket. **Top 1 per pool** advances. |
+| 9–16 | 2–3 pools of 4–5. Round-robin within each pool. **Top 1 per pool** advances to single-elimination finals (configurable at creation time). |
+| 17–30 | 4–6 pools of 4–5. Same structure, larger elimination bracket. **Top 1 per pool** advances (configurable at creation time). |
 
 - Pool sizes are kept within ±1 person of each other.
 - Players are randomly assigned to pools.
@@ -201,17 +201,39 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Mobile-first score entry refinements: large tap targets, no misclicks courtside
 - Projected display mode: full-screen leaderboard sized for TV/projector
 - CSV upload for participant names at tournament creation
+- Bracket size choice at creation time: how many players advance per pool to the elimination bracket (default: top 1; organizer can select top 2 or top 3 for larger events)
 - Tiebreaker method choice at creation time: RPS (default) or run-off match
 - QR code on organizer screen linking to public display URL
 - Improved error messages and recovery flows
 
-**Phase 6 — Robust** · ⬜ Future · — Not tested
+**Phase 6 — Multilingual** · ⬜ Future · — Not tested
+
+- Language switcher on all pages (English / 日本語 / Español)
+- All UI strings translated: labels, buttons, status messages, tiebreaker announcements, final report
+- Language preference saved per device (no account needed)
+- Both organizer and public views fully support all three languages
+
+**Phase 7 — Robust** · ⬜ Future · — Not tested
 
 - Replace Upstash Redis with PostgreSQL via Neon (Vercel Marketplace, free tier)
 - Enables tournament history, search, and analytics
-- Traditional single-elimination bracket as an alternative format
 - Grade-based divisions (optional subdivision by rank)
 - Possibly: AJKF taikai regulations reference documentation within the app
+
+**Phase 8 — Simple Elimination Format** · ⬜ Future · — Not tested
+
+- New tournament type selectable at creation: **Single Elimination** (no pool play)
+- Participants are entered in rank order — the list itself is the seeding (1st entry = top seed)
+- Bracket generated immediately from the participant list — no pool phase, straight to knockout rounds
+- Same flag-count scoring per match, same bracket display and final report as the existing elimination bracket
+- Byes assigned to highest seeds when participant count is not a power of 2
+
+**Phase 9 — Traditional Bracket Visual** · ⬜ Future · — Not tested
+
+- Replace the current horizontal card layout with a proper left-to-right bracket tree on the public view
+- Matches connect with lines showing who advances where — the visual people expect from a tournament bracket
+- Completed matches show scores inline; upcoming matches show player names with empty score slots
+- Applies to both pool-play elimination finals and the simple elimination format from Phase 8
 
 ---
 
@@ -272,19 +294,54 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Projected display mode: a full-screen leaderboard view sized for a TV or projector
 - Tournament creation enhancements:
   - CSV upload for participant names (instead of typing each one)
+  - Bracket size choice: how many players per pool advance to the elimination bracket — **Top 1** (default), Top 2, or Top 3. This is set once at creation and determines the bracket structure. Affects the "Open Questions" table entry on format selection.
   - Tiebreaker method choice: **RPS** (default, instant, good for large tournaments with time pressure) or **run-off match** (live extra match, better for small tournaments)
 - QR code on organizer screen linking to public display
 - Better error handling and recovery (e.g., correct a score you entered wrong)
 
-### Phase 6 — Robust (Future)
+### Phase 6 — Multilingual
+
+*Goal: usable at multilingual events and by Japanese- and Spanish-speaking organizers*
+
+- Add a language switcher (flag icons or text toggle) visible on all pages: **English / 日本語 / Español**
+- Extract all hardcoded UI strings into a translation file (one per language); use **next-intl** (the standard i18n library for Next.js App Router)
+- Translate all three languages: labels, buttons, round names, pool names, score entry prompts, tiebreaker announcement text, final report headings
+- Language preference stored in the browser (localStorage) — no account required, persists across visits
+- Both the organizer view and the public display view fully support all three languages independently (organizer can run in Japanese while the public screen shows English, for example)
+- Japanese-specific: verify CJK font rendering; the app already uses Tailwind so a font stack addition handles this
+
+### Phase 7 — Robust (Future)
 
 *Goal: multi-event history and additional formats*
 
 - Replace Upstash Redis with **PostgreSQL via Neon** (available through the Vercel Marketplace, free tier)
   - Enables: tournament history, search, analytics, multiple organizer accounts
-- Traditional single-elimination bracket format as an alternative option
 - Grade-based divisions (optional subdivision by rank)
 - Possibly: official translation of AJKF taikai regulations as reference documentation within the app
+
+### Phase 8 — Simple Elimination Format
+
+*Goal: support events that don't use pool play at all — straight knockout from the first match*
+
+- New tournament type at creation: **Single Elimination** (alongside the existing pool-play formats)
+- No pool phase — the bracket is generated immediately from the full participant list
+- Seeding: participants are entered in rank order at creation time — the order of the list is the seeding (first entry = top seed); no separate seeding step required
+- Byes assigned to the highest seeds when the participant count is not a power of 2 (same logic as the existing elimination bracket)
+- Scoring is the same flag-count system (majority of 3 judges); same match card UI
+- Bracket display and final report reuse the existing components — this is primarily a format-selection addition, not a UI rebuild
+- Useful for small informal events, team competitions, or situations where time is very limited
+
+### Phase 9 — Traditional Bracket Visual
+
+*Goal: the public display shows a bracket that spectators immediately recognize*
+
+- Replace the current horizontal card-list layout with a proper left-to-right bracket tree on the **public view**
+- Rounds are columns; matches connect with lines showing the advancement path — the standard visual used in tennis, judo, and every other knockout sport
+- Completed matches display scores inline; upcoming matches show player names with empty score slots; byes are clearly labeled
+- Winner of each match is highlighted and visually "flows" to the next match
+- Organizer view can retain the current card layout if it is easier for score entry — this phase is specifically about the spectator experience
+- Applies to both the pool-play elimination finals (existing format) and the simple elimination format from Phase 8
+- Technical note: this requires a tree-rendering approach; a library like **react-tournament-bracket** or a custom SVG/flexbox layout will be evaluated
 
 ---
 
@@ -315,7 +372,7 @@ This means zero risk to the existing site.
 | Flag accumulation in a loss? | Yes — both sides keep their flags |
 | Pool assignment method | Random |
 | Format selection | Automatic based on participant count |
-| Post-pool format | Single-elimination bracket (skipped for ≤8 participants) |
+| Post-pool format | Single-elimination bracket (skipped for ≤8 participants); number of advancers per pool is organizer-set at creation time (default: top 1) |
 | Auth model | UUID secret link (no accounts) |
 | Mobile support | Mobile-first from Phase 1; full courtside use by Phase 4 |
 | Storage progression | JSON (local) → Upstash Redis via Vercel Marketplace (live) → PostgreSQL (robust) |

@@ -1,36 +1,28 @@
-import fs from "fs";
-import path from "path";
+import { Redis } from "@upstash/redis";
 import { Tournament } from "@/types";
 
-const DATA_DIR = path.join(process.cwd(), "data", "tournaments");
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
+const TOURNAMENT_PREFIX = "tournament:";
+const TOURNAMENT_INDEX = "tournaments";
+
+export async function saveTournament(tournament: Tournament): Promise<void> {
+  await redis.set(`${TOURNAMENT_PREFIX}${tournament.id}`, tournament);
+  await redis.sadd(TOURNAMENT_INDEX, tournament.id);
 }
 
-function tournamentPath(id: string): string {
-  return path.join(DATA_DIR, `${id}.json`);
+export async function loadTournament(id: string): Promise<Tournament | null> {
+  return redis.get<Tournament>(`${TOURNAMENT_PREFIX}${id}`);
 }
 
-export function saveTournament(tournament: Tournament): void {
-  ensureDataDir();
-  fs.writeFileSync(tournamentPath(tournament.id), JSON.stringify(tournament, null, 2), "utf-8");
-}
-
-export function loadTournament(id: string): Tournament | null {
-  const filePath = tournamentPath(id);
-  if (!fs.existsSync(filePath)) return null;
-  const raw = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(raw) as Tournament;
-}
-
-export function listTournaments(): Tournament[] {
-  ensureDataDir();
-  const files = fs.readdirSync(DATA_DIR).filter((f) => f.endsWith(".json"));
-  return files.map((f) => {
-    const raw = fs.readFileSync(path.join(DATA_DIR, f), "utf-8");
-    return JSON.parse(raw) as Tournament;
-  });
+export async function listTournaments(): Promise<Tournament[]> {
+  const ids = await redis.smembers(TOURNAMENT_INDEX);
+  if (ids.length === 0) return [];
+  const tournaments = await Promise.all(
+    ids.map((id) => redis.get<Tournament>(`${TOURNAMENT_PREFIX}${id}`))
+  );
+  return tournaments.filter((t): t is Tournament => t !== null);
 }

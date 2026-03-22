@@ -8,7 +8,7 @@ export default async function ViewPage({
   params: Promise<{ uuid: string }>;
 }) {
   const { uuid } = await params;
-  const tournament = loadTournament(uuid);
+  const tournament = await loadTournament(uuid);
   if (!tournament) notFound();
 
   return <ViewClient initialTournament={tournament} />;

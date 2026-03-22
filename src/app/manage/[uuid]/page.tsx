@@ -8,7 +8,7 @@ export default async function ManagePage({
   params: Promise<{ uuid: string }>;
 }) {
   const { uuid } = await params;
-  const tournament = loadTournament(uuid);
+  const tournament = await loadTournament(uuid);
   if (!tournament) notFound();
 
   return <ManageClient initialTournament={tournament} />;

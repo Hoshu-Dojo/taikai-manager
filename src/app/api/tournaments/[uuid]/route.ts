@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: Promise<{ uuid: string }> }
 ) {
   const { uuid } = await params;
-  const tournament = loadTournament(uuid);
+  const tournament = await loadTournament(uuid);
   if (!tournament) {
     return NextResponse.json({ error: "Tournament not found." }, { status: 404 });
   }

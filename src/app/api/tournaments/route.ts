@@ -5,7 +5,7 @@ import { saveTournament, listTournaments } from "@/lib/storage";
 import { buildPools, determineFormat } from "@/lib/pools";
 
 export async function GET() {
-  const tournaments = listTournaments();
+  const tournaments = await listTournaments();
   return NextResponse.json(tournaments);
 }
 
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     createdAt: new Date().toISOString(),
   };
 
-  saveTournament(tournament);
+  await saveTournament(tournament);
 
   return NextResponse.json(tournament, { status: 201 });
 }

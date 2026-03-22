@@ -7,7 +7,7 @@ export async function POST(
   { params }: { params: Promise<{ uuid: string }> }
 ) {
   const { uuid } = await params;
-  const tournament = loadTournament(uuid);
+  const tournament = await loadTournament(uuid);
   if (!tournament) {
     return NextResponse.json({ error: "Tournament not found." }, { status: 404 });
   }
@@ -40,6 +40,6 @@ export async function POST(
   tournament.eliminationMatches = generateEliminationBracket(tournament);
   tournament.status = "elimination";
 
-  saveTournament(tournament);
+  await saveTournament(tournament);
   return NextResponse.json(tournament);
 }

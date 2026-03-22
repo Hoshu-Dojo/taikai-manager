@@ -6,7 +6,7 @@ export async function PATCH(
   { params }: { params: Promise<{ uuid: string; matchId: string }> }
 ) {
   const { uuid, matchId } = await params;
-  const tournament = loadTournament(uuid);
+  const tournament = await loadTournament(uuid);
   if (!tournament) {
     return NextResponse.json({ error: "Tournament not found." }, { status: 404 });
   }
@@ -67,6 +67,6 @@ export async function PATCH(
     tournament.status = "complete";
   }
 
-  saveTournament(tournament);
+  await saveTournament(tournament);
   return NextResponse.json(tournament);
 }
