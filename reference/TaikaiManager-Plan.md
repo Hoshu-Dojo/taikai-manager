@@ -151,15 +151,67 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 
 ## Phased Development Plan
 
-| Phase | Name | Goal | Status | Tested |
-| --- | --- | --- | --- | --- |
-| 0 | Foundation | Runnable app with core data model | ✅ Complete | ✅ |
-| 1 | Core Features | Score entry, live leaderboard, tiebreakers | ✅ Complete | ✅ |
-| 2 | Elimination Bracket | Full tournament end-to-end (pools → finals) | 🔄 Next | — |
-| 3 | Deploy to Vercel | Live on the internet, Upstash Redis storage | ⬜ Not started | — |
-| 4 | Hoshu Dojo Branding | App looks and feels like part of the dojo | ⬜ Not started | — |
-| 5 | Polish | Production-quality for a real event | ⬜ Not started | — |
-| 6 | Robust | Multi-event history, Postgres, additional formats | ⬜ Future | — |
+**Phase 0 — Foundation** · ✅ Complete · ✅ Tested
+
+- Next.js + TypeScript + Tailwind project setup
+- Data types: Tournament, Player, Pool, Match
+- Tournament creation UI (name, date, participant list)
+- Pool generation: random assignment, circle-method schedule
+- Local JSON file storage
+
+**Phase 1 — Core Features** · ✅ Complete · ✅ Tested
+
+- Score entry UI: match cards by round, tap to enter a result
+- Score editing: any score can be corrected at any time
+- Live leaderboard with polling every 7 seconds (public view auto-refreshes)
+- Flag pip visualization (▲ icons instead of raw numbers)
+- Tiebreaker chain: total flags → head-to-head → virtual jankenpon (RPS)
+- Winner/Advances badge on pool leader, hidden until pool is complete
+- Mouseover tooltip explaining why that player won
+- Organizer URL (secret) vs. public display URL split
+
+**Phase 2 — Elimination Bracket** · 🔄 Next · — Not tested
+
+- Detect when all pool matches are complete
+- Auto-generate single-elimination bracket (top 1 per pool advances)
+- Cross-seeding so pool-mates don't meet before the final
+- Bracket size rounds up to next power of 2; byes go to highest seeds
+- Bracket display: visual tree on both manage and public view pages
+- Score entry for each elimination match, same as pool play
+- Final report: full results, flag totals, bracket outcomes, printable
+
+**Phase 3 — Deploy to Vercel** · ⬜ Not started · — Not tested
+
+- Connect GitHub repo to Vercel (auto-deploy on push)
+- Swap local JSON storage for Upstash Redis via Vercel Marketplace (JSON blobs by UUID key, free tier)
+- Configure `taikai.hoshudojo.com` subdomain: CNAME record in Squarespace Domains pointing to Vercel
+- Set environment variables in Vercel dashboard (Redis connection string)
+- End-to-end test with a simulated real tournament
+
+**Phase 4 — Hoshu Dojo Branding** · ⬜ Not started · — Not tested
+
+- Extract color palette and fonts from hoshudojo.com (or use supplied assets)
+- Add Hoshu Dojo logo to header on manage and public view pages (SVG/PNG from Tom or pulled from site)
+- Apply dojo colors and typography throughout
+- Style the tournament creation/home page to match the main site
+- Add a "Taikai" link to the hoshudojo.com site navigation (one-line edit)
+
+**Phase 5 — Polish** · ⬜ Not started · — Not tested
+
+- Mobile-first score entry refinements: large tap targets, no misclicks courtside
+- Projected display mode: full-screen leaderboard sized for TV/projector
+- CSV upload for participant names at tournament creation
+- Tiebreaker method choice at creation time: RPS (default) or run-off match
+- QR code on organizer screen linking to public display URL
+- Improved error messages and recovery flows
+
+**Phase 6 — Robust** · ⬜ Future · — Not tested
+
+- Replace Upstash Redis with PostgreSQL via Neon (Vercel Marketplace, free tier)
+- Enables tournament history, search, and analytics
+- Traditional single-elimination bracket as an alternative format
+- Grade-based divisions (optional subdivision by rank)
+- Possibly: AJKF taikai regulations reference documentation within the app
 
 ---
 
