@@ -3,7 +3,8 @@
     "allow": [
       "mcp__perplexity__perplexity_ask",
       "Bash(npm run:*)",
-      "Bash(echo \"EXIT: $?\")"
+      "Bash(curl:*)",
+      "Bash(npx next:*)"
     ]
   }
 }

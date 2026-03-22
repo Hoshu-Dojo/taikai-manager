@@ -1,0 +1,289 @@
+{
+  "id": "c969173e-2631-4393-9dc6-e281ba1d7138",
+  "name": "sadf",
+  "date": "2026-03-22",
+  "status": "pool_play",
+  "format": "pools_elimination",
+  "players": [
+    {
+      "id": "f83d076c-676d-4dc4-8bfb-287814bc5e6a",
+      "name": "1",
+      "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020"
+    },
+    {
+      "id": "e90ae70f-4c4d-403e-9162-9c9e1af100a3",
+      "name": "2",
+      "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020"
+    },
+    {
+      "id": "4ce477ef-5782-41fc-95b6-ffa32ec7383e",
+      "name": "3",
+      "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b"
+    },
+    {
+      "id": "acc9911c-fce4-4aa8-97af-10c6bae9b43a",
+      "name": "4",
+      "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020"
+    },
+    {
+      "id": "889a480b-6ac3-4a62-99c5-26b8cd6146ac",
+      "name": "5",
+      "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b"
+    },
+    {
+      "id": "d2492e1a-e1db-47eb-8768-f2e59b619a22",
+      "name": "6",
+      "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b"
+    },
+    {
+      "id": "83127b9a-3e74-4008-aaef-759944c60cb2",
+      "name": "7",
+      "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020"
+    },
+    {
+      "id": "cfb2c721-3dca-48f0-8d81-ae29370fb99c",
+      "name": "8",
+      "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020"
+    },
+    {
+      "id": "9df033e6-7413-4b5a-a55f-f4803a5d9fcd",
+      "name": "9",
+      "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b"
+    },
+    {
+      "id": "259ff914-8f6e-4e88-83e7-6376a1d58e8e",
+      "name": "10",
+      "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b"
+    }
+  ],
+  "pools": [
+    {
+      "id": "e1b52e05-23d8-4969-827e-b55d021a767b",
+      "name": "Pool A",
+      "playerIds": [
+        "889a480b-6ac3-4a62-99c5-26b8cd6146ac",
+        "259ff914-8f6e-4e88-83e7-6376a1d58e8e",
+        "9df033e6-7413-4b5a-a55f-f4803a5d9fcd",
+        "4ce477ef-5782-41fc-95b6-ffa32ec7383e",
+        "d2492e1a-e1db-47eb-8768-f2e59b619a22"
+      ],
+      "matches": [
+        {
+          "id": "925a5ab5-6061-44c5-bb76-fc977439b55b",
+          "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b",
+          "player1Id": "259ff914-8f6e-4e88-83e7-6376a1d58e8e",
+          "player2Id": "d2492e1a-e1db-47eb-8768-f2e59b619a22",
+          "round": 1,
+          "flagsPlayer1": 0,
+          "flagsPlayer2": 3,
+          "complete": true
+        },
+        {
+          "id": "d1d3fb11-02db-475b-85a5-6f674ebad116",
+          "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b",
+          "player1Id": "9df033e6-7413-4b5a-a55f-f4803a5d9fcd",
+          "player2Id": "4ce477ef-5782-41fc-95b6-ffa32ec7383e",
+          "round": 1,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "e72e9d9e-a14c-4b72-af53-5f7d473091f8",
+          "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b",
+          "player1Id": "889a480b-6ac3-4a62-99c5-26b8cd6146ac",
+          "player2Id": "d2492e1a-e1db-47eb-8768-f2e59b619a22",
+          "round": 2,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "97020b73-7a5b-4f0b-8596-866d181e4cd6",
+          "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b",
+          "player1Id": "259ff914-8f6e-4e88-83e7-6376a1d58e8e",
+          "player2Id": "9df033e6-7413-4b5a-a55f-f4803a5d9fcd",
+          "round": 2,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "f461a1e0-934e-4b83-863b-e1f8b8ca528a",
+          "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b",
+          "player1Id": "889a480b-6ac3-4a62-99c5-26b8cd6146ac",
+          "player2Id": "4ce477ef-5782-41fc-95b6-ffa32ec7383e",
+          "round": 3,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "27c77001-27f4-418f-a72a-f159725f435e",
+          "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b",
+          "player1Id": "d2492e1a-e1db-47eb-8768-f2e59b619a22",
+          "player2Id": "9df033e6-7413-4b5a-a55f-f4803a5d9fcd",
+          "round": 3,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "7509571e-7763-457d-bd4f-14227d8c9471",
+          "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b",
+          "player1Id": "889a480b-6ac3-4a62-99c5-26b8cd6146ac",
+          "player2Id": "9df033e6-7413-4b5a-a55f-f4803a5d9fcd",
+          "round": 4,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "36829431-1765-41dc-80d1-fa724b270b08",
+          "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b",
+          "player1Id": "4ce477ef-5782-41fc-95b6-ffa32ec7383e",
+          "player2Id": "259ff914-8f6e-4e88-83e7-6376a1d58e8e",
+          "round": 4,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "d54ba945-034f-4269-b270-689229912275",
+          "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b",
+          "player1Id": "889a480b-6ac3-4a62-99c5-26b8cd6146ac",
+          "player2Id": "259ff914-8f6e-4e88-83e7-6376a1d58e8e",
+          "round": 5,
+          "flagsPlayer1": 0,
+          "flagsPlayer2": 3,
+          "complete": true
+        },
+        {
+          "id": "881346de-ee45-4b81-b568-bd572363d04c",
+          "poolId": "e1b52e05-23d8-4969-827e-b55d021a767b",
+          "player1Id": "4ce477ef-5782-41fc-95b6-ffa32ec7383e",
+          "player2Id": "d2492e1a-e1db-47eb-8768-f2e59b619a22",
+          "round": 5,
+          "flagsPlayer1": 1,
+          "flagsPlayer2": 2,
+          "complete": true
+        }
+      ]
+    },
+    {
+      "id": "d86b6e0d-32c2-422e-a078-43cd2375b020",
+      "name": "Pool B",
+      "playerIds": [
+        "cfb2c721-3dca-48f0-8d81-ae29370fb99c",
+        "e90ae70f-4c4d-403e-9162-9c9e1af100a3",
+        "83127b9a-3e74-4008-aaef-759944c60cb2",
+        "f83d076c-676d-4dc4-8bfb-287814bc5e6a",
+        "acc9911c-fce4-4aa8-97af-10c6bae9b43a"
+      ],
+      "matches": [
+        {
+          "id": "c0790461-f6b1-4b3f-99f4-5a4b5db2e915",
+          "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020",
+          "player1Id": "e90ae70f-4c4d-403e-9162-9c9e1af100a3",
+          "player2Id": "acc9911c-fce4-4aa8-97af-10c6bae9b43a",
+          "round": 1,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "062a9575-fffd-4dd3-bf21-ee806a62ac06",
+          "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020",
+          "player1Id": "83127b9a-3e74-4008-aaef-759944c60cb2",
+          "player2Id": "f83d076c-676d-4dc4-8bfb-287814bc5e6a",
+          "round": 1,
+          "flagsPlayer1": 1,
+          "flagsPlayer2": 2,
+          "complete": true
+        },
+        {
+          "id": "e3cf19f6-fc3c-4a98-9cc8-b419199e83f2",
+          "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020",
+          "player1Id": "cfb2c721-3dca-48f0-8d81-ae29370fb99c",
+          "player2Id": "acc9911c-fce4-4aa8-97af-10c6bae9b43a",
+          "round": 2,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "31c49d98-a68f-42ff-879d-f5c89cbcba12",
+          "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020",
+          "player1Id": "e90ae70f-4c4d-403e-9162-9c9e1af100a3",
+          "player2Id": "83127b9a-3e74-4008-aaef-759944c60cb2",
+          "round": 2,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "3cc4721a-fc81-486a-bd9b-ac43a0a27c52",
+          "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020",
+          "player1Id": "cfb2c721-3dca-48f0-8d81-ae29370fb99c",
+          "player2Id": "f83d076c-676d-4dc4-8bfb-287814bc5e6a",
+          "round": 3,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "9447a58d-946e-429d-9732-4ab155ebf78f",
+          "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020",
+          "player1Id": "acc9911c-fce4-4aa8-97af-10c6bae9b43a",
+          "player2Id": "83127b9a-3e74-4008-aaef-759944c60cb2",
+          "round": 3,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "d711d59a-ff64-4b7f-9f98-8866c06c3c40",
+          "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020",
+          "player1Id": "cfb2c721-3dca-48f0-8d81-ae29370fb99c",
+          "player2Id": "83127b9a-3e74-4008-aaef-759944c60cb2",
+          "round": 4,
+          "flagsPlayer1": 0,
+          "flagsPlayer2": 3,
+          "complete": true
+        },
+        {
+          "id": "87d948de-1927-4ae3-be0d-b39b477e936c",
+          "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020",
+          "player1Id": "f83d076c-676d-4dc4-8bfb-287814bc5e6a",
+          "player2Id": "e90ae70f-4c4d-403e-9162-9c9e1af100a3",
+          "round": 4,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "787e79ba-7cb0-494d-994c-0cad38cb7981",
+          "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020",
+          "player1Id": "cfb2c721-3dca-48f0-8d81-ae29370fb99c",
+          "player2Id": "e90ae70f-4c4d-403e-9162-9c9e1af100a3",
+          "round": 5,
+          "flagsPlayer1": 2,
+          "flagsPlayer2": 1,
+          "complete": true
+        },
+        {
+          "id": "411c6cbe-82ff-4379-8dc8-3c326ff1e8b8",
+          "poolId": "d86b6e0d-32c2-422e-a078-43cd2375b020",
+          "player1Id": "f83d076c-676d-4dc4-8bfb-287814bc5e6a",
+          "player2Id": "acc9911c-fce4-4aa8-97af-10c6bae9b43a",
+          "round": 5,
+          "flagsPlayer1": 1,
+          "flagsPlayer2": 2,
+          "complete": true
+        }
+      ]
+    }
+  ],
+  "eliminationMatches": [],
+  "createdAt": "2026-03-22T21:25:27.239Z"
+}

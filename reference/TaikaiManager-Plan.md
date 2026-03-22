@@ -31,19 +31,23 @@ During the **elimination bracket** (9+ participants only), flags are still recor
 
 When two or more players have the same total flag count:
 1. Head-to-head flag count in the direct match between tied players
-2. Flag differential (flags scored minus flags conceded) across all their pool matches
-3. Automated draw of lots (see below)
+2. Automated draw of lots (see below)
+
+RPS is only reachable in a 3-way (or larger) circular tie — e.g. A beat B, B beat C, C beat A, all by the same margins — since a 2-player tie is always resolved by head-to-head (they played each other directly).
 
 **This must be announced before the tournament begins.**
 
 ### Automated Draw of Lots
 
-When tiebreakers 1 and 2 are exhausted, the app resolves the tie automatically using a randomized rock-paper-scissors simulation. The software generates a random throw for each tied player, resolves the result, and displays an announcement:
+When tiebreaker 1 is exhausted, the app resolves the tie automatically using a deterministic rock-paper-scissors simulation (seeded by player IDs and tournament ID — not random, so the result is reproducible). The software generates a throw for each tied player, resolves the result, and displays an announcement:
 
 > *"Bob and Sarah were tied for the last position in the elimination round. Randomized results gave Bob rock and Sarah scissors. Bob advances to the elimination round. Better luck next time, Sarah!"*
 
+**Alternative: run-off match.** For small tournaments where time allows, a live run-off match is cleaner and more dramatic. Choosing between RPS and run-off will be a creation-time setting (see Phase 4).
+
 This mechanism is used for:
-- Determining pool standings when flags and differential are equal
+
+- Determining pool standings when head-to-head is equal
 - Assigning byes in the elimination bracket when seeding is otherwise equal
 
 ---
@@ -189,7 +193,9 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 
 - Mobile-first refinements for score entry (large buttons, no misclicks at courtside)
 - Projected display mode: a full-screen leaderboard view sized for a TV or projector
-- CSV import for participant list
+- Tournament creation enhancements:
+  - CSV upload for participant names (instead of typing each one)
+  - Tiebreaker method choice: **RPS** (default, instant, good for large tournaments with time pressure) or **run-off match** (live extra match, better for small tournaments)
 - QR code on organizer screen linking to public display
 - Better error handling and recovery (e.g., correct a score you entered wrong)
 
