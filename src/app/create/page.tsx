@@ -11,6 +11,8 @@ export default function CreateTournament() {
   const [playerInput, setPlayerInput] = useState("");
   const [rankInput, setRankInput] = useState("");
   const [players, setPlayers] = useState<{ name: string; rank: string }[]>([]);
+  const [bulkMode, setBulkMode] = useState(false);
+  const [bulkInput, setBulkInput] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -25,6 +27,40 @@ export default function CreateTournament() {
     setPlayerInput("");
     setRankInput("");
     setError("");
+  }
+
+  function addBulk() {
+    const lines = bulkInput.split("\n").map((l) => l.trim()).filter(Boolean);
+    const added: string[] = [];
+    const skipped: string[] = [];
+    const next = [...players];
+    for (const line of lines) {
+      const commaIdx = line.lastIndexOf(",");
+      let pName: string;
+      let pRank: string;
+      if (commaIdx !== -1) {
+        pName = line.slice(0, commaIdx).trim();
+        pRank = line.slice(commaIdx + 1).trim();
+      } else {
+        pName = line;
+        pRank = "";
+      }
+      if (!pName) continue;
+      if (next.some((p) => p.name === pName)) {
+        skipped.push(pName);
+      } else {
+        next.push({ name: pName, rank: pRank });
+        added.push(pName);
+      }
+    }
+    setPlayers(next);
+    setBulkInput("");
+    setBulkMode(false);
+    if (skipped.length > 0) {
+      setError(`Added ${added.length}. Skipped duplicates: ${skipped.join(", ")}.`);
+    } else {
+      setError("");
+    }
   }
 
   function removePlayer(playerName: string) {
@@ -113,36 +149,71 @@ export default function CreateTournament() {
 
           {/* Players */}
           <div>
-            <label htmlFor="player-name" className="block text-sm font-medium mb-1" style={{ color: "var(--hd-inverse-text)" }}>
-              Participants
-            </label>
-            <div className="flex gap-2">
-              <input
-                id="player-name"
-                type="text"
-                value={playerInput}
-                onChange={(e) => setPlayerInput(e.target.value)}
-                onKeyDown={handlePlayerKeyDown}
-                placeholder="Name"
-                className="flex-1 bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
-              />
-              <input
-                type="text"
-                value={rankInput}
-                onChange={(e) => setRankInput(e.target.value)}
-                onKeyDown={handlePlayerKeyDown}
-                placeholder="5D"
-                className="w-20 bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
-              />
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="player-name" className="block text-sm font-medium" style={{ color: "var(--hd-inverse-text)" }}>
+                Participants
+              </label>
               <button
                 type="button"
-                onClick={addPlayer}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-4 py-2 rounded-lg transition-colors"
+                onClick={() => { setBulkMode((v) => !v); setError(""); }}
+                className="text-xs underline"
+                style={{ color: "var(--hd-accent)" }}
               >
-                Add
+                {bulkMode ? "Add one at a time" : "Paste a list"}
               </button>
             </div>
-            <p className="mt-1 text-xs text-gray-500">Rank is optional — e.g. 5D, 3K, 初段</p>
+
+            {bulkMode ? (
+              <div className="space-y-2">
+                <textarea
+                  autoFocus
+                  value={bulkInput}
+                  onChange={(e) => setBulkInput(e.target.value)}
+                  rows={6}
+                  placeholder={"Tanaka Kenji, 4-dan\nYamamoto Hiroshi\nSmith Sarah, 3-dan"}
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3] font-mono text-sm"
+                />
+                <p className="text-xs text-gray-500">One name per line. Rank is optional — add a comma after the name: <em>Tanaka Kenji, 4-dan</em></p>
+                <button
+                  type="button"
+                  onClick={addBulk}
+                  disabled={!bulkInput.trim()}
+                  className="bg-gray-200 hover:bg-gray-300 disabled:opacity-40 text-gray-800 font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                  Add All
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-2">
+                  <input
+                    id="player-name"
+                    type="text"
+                    value={playerInput}
+                    onChange={(e) => setPlayerInput(e.target.value)}
+                    onKeyDown={handlePlayerKeyDown}
+                    placeholder="Name"
+                    className="flex-1 bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
+                  />
+                  <input
+                    type="text"
+                    value={rankInput}
+                    onChange={(e) => setRankInput(e.target.value)}
+                    onKeyDown={handlePlayerKeyDown}
+                    placeholder="5D"
+                    className="w-20 bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
+                  />
+                  <button
+                    type="button"
+                    onClick={addPlayer}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Add
+                  </button>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">Rank is optional — e.g. 5D, 3K, 初段</p>
+              </>
+            )}
 
             {players.length > 0 && (
               <ul className="mt-3 space-y-1">
