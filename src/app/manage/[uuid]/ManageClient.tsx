@@ -88,7 +88,7 @@ function MatchCard({
     <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <span className="text-gray-800 font-medium">
-          {p1.name} <span className="text-gray-400 font-normal">vs</span> {p2.name}
+          {p1.name} <span className="text-gray-600 font-normal">vs</span> {p2.name}
         </span>
         {match.complete && (
           <span className="text-sm font-semibold text-green-600 whitespace-nowrap">
@@ -112,7 +112,7 @@ function MatchCard({
       {!match.complete && !entering && (
         <button
           onClick={() => { setEntering(true); setError(""); }}
-          className="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 rounded-lg transition-colors"
+          className="w-full text-sm bg-white border border-[#4242C3] text-[#4242C3] hover:bg-[#4242C3]/5 font-medium py-2 rounded-lg transition-colors"
         >
           Enter score
         </button>
@@ -206,10 +206,7 @@ function PoolSection({
                     <span className="flex items-center gap-2">
                       {row.playerName}
                       {label && poolComplete && (
-                        <span
-                          title={`${label}: ${winReason}`}
-                          className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full cursor-help"
-                        >
+                        <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
                           {label}
                         </span>
                       )}
@@ -223,11 +220,16 @@ function PoolSection({
             })}
           </tbody>
         </table>
+        {poolComplete && standings.length > 0 && (
+          <p className="px-5 py-2 text-xs text-gray-600 border-t border-gray-100">
+            {standings[0].playerName} advances — {winReason}
+          </p>
+        )}
       </div>
 
       {roundNumbers.map((round) => (
         <div key={round} className="space-y-2">
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+          <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--hd-inverse-text)" }}>
             Round {round}
           </h3>
           {rounds.get(round)!.map((match) => (
@@ -326,7 +328,7 @@ function EliminationMatchCard({
           <span className={match.winnerId === match.player1Id && isScored ? "font-bold" : ""}>
             {p1Display}
           </span>
-          <span className="text-gray-400 font-normal"> vs </span>
+          <span className="text-gray-600 font-normal"> vs </span>
           <span className={match.winnerId === match.player2Id && isScored ? "font-bold" : ""}>
             {p2Display}
           </span>
@@ -359,7 +361,7 @@ function EliminationMatchCard({
       {!isBye && !isScored && !entering && !readOnly && p1 && p2 && (
         <button
           onClick={() => { setEntering(true); setError(""); }}
-          className="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 rounded-lg transition-colors"
+          className="w-full text-sm bg-white border border-[#4242C3] text-[#4242C3] hover:bg-[#4242C3]/5 font-medium py-2 rounded-lg transition-colors"
         >
           Enter score
         </button>
@@ -415,7 +417,7 @@ function BracketSection({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-gray-800">Elimination Bracket</h2>
+      <h2 className="text-xl font-sans font-bold" style={{ color: "var(--hd-inverse-text)" }}>Elimination Bracket</h2>
       <div className="overflow-x-auto pb-2">
         <div className="flex gap-6 min-w-max">
           {Array.from({ length: maxRound }, (_, ri) => ri + 1).map((round) => {
@@ -498,7 +500,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
   return (
     <div className="space-y-6 print:space-y-4">
       <div className="flex items-center justify-between print:hidden">
-        <h2 className="text-xl font-bold text-gray-800">Final Report</h2>
+        <h2 className="text-xl font-sans font-bold" style={{ color: "var(--hd-inverse-text)" }}>Final Report</h2>
         <button
           onClick={() => window.print()}
           className="text-sm hover:underline" style={{ color: "var(--hd-accent)" }}
@@ -554,7 +556,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
               </tbody>
             </table>
             {standings.length > 0 && (
-              <p className="px-5 py-2 text-xs text-gray-400 border-t border-gray-50">
+              <p className="px-5 py-2 text-xs text-gray-600 border-t border-gray-50">
                 {standings[0].playerName} advances — {winReason}
               </p>
             )}
@@ -580,7 +582,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
                 const label = roundLabel(round, roundCount);
                 return (
                   <div key={round}>
-                    <p className="px-5 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide bg-gray-50">
+                    <p className="px-5 py-2 text-xs font-semibold text-gray-600 uppercase tracking-wide bg-gray-50">
                       {label}
                     </p>
                     {roundMatches
