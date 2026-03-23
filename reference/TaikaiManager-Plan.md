@@ -253,6 +253,46 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - IAM with accounts and a dashboard of your tournaments.
 - Tournaments that are broken up by rank with good UX (think 100 people across many ranks, but only one test instance.) PROBABLY WON'T
 
+**Phase X - Score Correction Audit Log** · ⬜ Future · — Not tested
+
+- Record a "last modified" timestamp on each match when a score is corrected
+- Optionally log the before/after flag values so disputed corrections have a paper trail
+
+**Phase X - Withdrawal / Forfeit Handling** · ⬜ Future · — Not tested
+
+- Define policy for mid-tournament withdrawals: walkover scored as 3-0 for the remaining player, or match voided and flags discarded
+- UI prompt for the organizer to mark a player as withdrawn; propagate forfeit scores automatically across remaining pool matches
+- Announce withdrawal on the public display
+
+**Phase X - Court Schedule / Match Queue** · ⬜ Future · — Not tested
+
+- Add a "next match / on deck" display for single-court events
+- Show the upcoming match sequence in order, not just by round grouping
+- Optionally display on the public view so participants know when they're up
+
+**Phase X - Tournament State Lock** · ⬜ Future · — Not tested
+
+- Prevent participant list edits once scoring has begun
+- Confirmation prompt before any destructive action (deleting a player, regenerating pools)
+- Clear visual indicator showing tournament is "in progress" vs. "setup"
+
+**Phase X - Public View Status Narration** · ⬜ Future · — Not tested
+
+- Show a current-phase banner on the public display: "Round 2 of Pool Play", "Pool Play Complete", "Elimination Bracket in Progress", etc.
+- Updates automatically as the organizer advances the tournament
+
+**Phase X - Data Export / Resilience** · ⬜ Future · — Not tested
+
+- "Export to JSON" button on the organizer screen at any time
+- Allows manual backup and recovery if Redis evicts data or Vercel has an outage
+- Exported JSON is re-importable to restore a tournament in progress
+
+**Phase X - Division / Rank Stub** · ⬜ Future · — Not tested
+
+- Add an optional `division` field to the Player and Tournament data models now, before schema migration becomes costly
+- No UI required in this phase — just schema-level prep for eventual grade-based divisions (see Phase 7)
+
+
 
 
 ---
