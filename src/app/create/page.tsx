@@ -187,7 +187,7 @@ export default function CreateTournament() {
               <button
                 type="button"
                 onClick={() => { setBulkMode((v) => !v); setError(""); }}
-                className="text-xs underline"
+                className="text-xs font-medium px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
                 style={{ color: "var(--hd-accent)" }}
               >
                 {bulkMode ? "Add one at a time" : "Paste a list"}
