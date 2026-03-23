@@ -35,13 +35,15 @@ function MatchCard({
   tournamentId,
   players,
   onUpdate,
+  matchNumber,
 }: {
   match: Match;
   tournamentId: string;
   players: Tournament["players"];
   onUpdate: (updated: Tournament) => void;
+  matchNumber?: number;
 }) {
-  const [entering, setEntering] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -69,7 +71,7 @@ function MatchCard({
       }
       const updated: Tournament = await res.json();
       setSubmitting(false);
-      setEntering(false);
+      setEditing(false);
       onUpdate(updated);
     } catch {
       setError("Could not reach server.");
@@ -84,24 +86,31 @@ function MatchCard({
         : p2.name
       : null;
 
+  const showOptions = !match.complete || editing;
+
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-gray-800 font-medium">
-          {p1.name} <span className="text-gray-600 font-normal">vs</span> {p2.name}
-        </span>
+    <div className="bg-white border border-gray-200 rounded-xl p-3 space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          {matchNumber && (
+            <span className="block text-xs text-gray-400 mb-0.5">#{matchNumber}</span>
+          )}
+          <span className="text-gray-800 font-medium text-sm">
+            {p1.name} <span className="text-gray-600 font-normal">vs</span> {p2.name}
+          </span>
+        </div>
         {match.complete && (
-          <span className="text-sm font-semibold text-green-600 whitespace-nowrap">
+          <span className="text-sm font-semibold text-green-600 whitespace-nowrap mt-0.5">
             {match.flagsPlayer1}–{match.flagsPlayer2}
           </span>
         )}
       </div>
 
-      {match.complete && winner && !entering && (
+      {match.complete && winner && !editing && (
         <div className="flex items-center justify-between">
           <span className="text-xs text-gray-500">{winner} wins</span>
           <button
-            onClick={() => { setEntering(true); setError(""); }}
+            onClick={() => { setEditing(true); setError(""); }}
             className="text-xs hover:underline" style={{ color: "var(--hd-accent)" }}
           >
             Edit
@@ -109,34 +118,27 @@ function MatchCard({
         </div>
       )}
 
-      {!match.complete && !entering && (
-        <button
-          onClick={() => { setEntering(true); setError(""); }}
-          className="w-full text-sm bg-white border border-[#4242C3] text-[#4242C3] hover:bg-[#4242C3]/5 font-medium py-2 rounded-lg transition-colors"
-        >
-          Enter score
-        </button>
-      )}
-
-      {entering && (
-        <div className="space-y-2">
+      {showOptions && (
+        <div className="space-y-1">
           {options.map((opt) => (
             <button
               key={opt.label}
               disabled={submitting}
               onClick={() => submitScore(opt)}
-              className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 text-gray-800 text-sm font-medium transition-colors disabled:opacity-50 hover:border-[#4242C3] hover:bg-[#4242C3]/10"
+              className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 text-gray-800 text-xs font-medium transition-colors disabled:opacity-50 hover:border-[#4242C3] hover:bg-[#4242C3]/10"
             >
               {opt.label}
             </button>
           ))}
-          <button
-            disabled={submitting}
-            onClick={() => { setEntering(false); setError(""); }}
-            className="w-full text-sm text-gray-400 hover:text-gray-600 py-1"
-          >
-            Cancel
-          </button>
+          {editing && (
+            <button
+              disabled={submitting}
+              onClick={() => { setEditing(false); setError(""); }}
+              className="w-full text-xs text-gray-400 hover:text-gray-600 py-1"
+            >
+              Cancel
+            </button>
+          )}
           {error && <p className="text-xs text-red-500">{error}</p>}
         </div>
       )}
@@ -177,6 +179,15 @@ function PoolSection({
 
   const completed = pool.matches.filter((m) => m.complete).length;
   const poolComplete = completed === pool.matches.length;
+
+  // Sequential match numbers across all rounds in this pool
+  let matchNum = 0;
+  const matchNumbers = new Map<string, number>();
+  for (const round of roundNumbers) {
+    for (const match of rounds.get(round)!) {
+      matchNumbers.set(match.id, ++matchNum);
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -232,15 +243,18 @@ function PoolSection({
           <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--hd-inverse-text)" }}>
             Round {round}
           </h3>
-          {rounds.get(round)!.map((match) => (
-            <MatchCard
-              key={match.id}
-              match={match}
-              tournamentId={tournament.id}
-              players={tournament.players}
-              onUpdate={onUpdate}
-            />
-          ))}
+          <div className="grid grid-cols-3 gap-3">
+            {rounds.get(round)!.map((match) => (
+              <MatchCard
+                key={match.id}
+                match={match}
+                tournamentId={tournament.id}
+                players={tournament.players}
+                onUpdate={onUpdate}
+                matchNumber={matchNumbers.get(match.id)}
+              />
+            ))}
+          </div>
         </div>
       ))}
     </div>
@@ -269,14 +283,16 @@ function EliminationMatchCard({
   players,
   onUpdate,
   readOnly,
+  matchNumber,
 }: {
   match: EliminationMatch;
   tournamentId: string;
   players: Tournament["players"];
   onUpdate: (updated: Tournament) => void;
   readOnly?: boolean;
+  matchNumber?: number;
 }) {
-  const [entering, setEntering] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -310,7 +326,7 @@ function EliminationMatchCard({
       }
       const updated: Tournament = await res.json();
       setSubmitting(false);
-      setEntering(false);
+      setEditing(false);
       onUpdate(updated);
     } catch {
       setError("Could not reach server.");
@@ -321,20 +337,27 @@ function EliminationMatchCard({
   const p1Display = p1?.name ?? (match.player1Source === "bye" ? "Bye" : "TBD");
   const p2Display = p2?.name ?? (match.player2Source === "bye" ? "Bye" : "TBD");
 
+  const showOptions = !readOnly && !isBye && p1 && p2 && (!isScored || editing);
+
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-gray-800 font-medium">
-          <span className={match.winnerId === match.player1Id && isScored ? "font-bold" : ""}>
-            {p1Display}
+    <div className="bg-white border border-gray-200 rounded-xl p-3 space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          {matchNumber && (
+            <span className="block text-xs text-gray-400 mb-0.5">#{matchNumber}</span>
+          )}
+          <span className="text-gray-800 font-medium text-sm">
+            <span className={match.winnerId === match.player1Id && isScored ? "font-bold" : ""}>
+              {p1Display}
+            </span>
+            <span className="text-gray-600 font-normal"> vs </span>
+            <span className={match.winnerId === match.player2Id && isScored ? "font-bold" : ""}>
+              {p2Display}
+            </span>
           </span>
-          <span className="text-gray-600 font-normal"> vs </span>
-          <span className={match.winnerId === match.player2Id && isScored ? "font-bold" : ""}>
-            {p2Display}
-          </span>
-        </span>
+        </div>
         {isScored && (
-          <span className="text-sm font-semibold text-green-600 whitespace-nowrap">
+          <span className="text-sm font-semibold text-green-600 whitespace-nowrap mt-0.5">
             {match.flagsP1}–{match.flagsP2}
           </span>
         )}
@@ -344,12 +367,16 @@ function EliminationMatchCard({
         <p className="text-xs text-gray-400">{winnerName} advances (bye)</p>
       )}
 
-      {!isBye && isScored && !entering && (
+      {!isBye && !isScored && !p1 && !p2 && (
+        <p className="text-xs text-gray-400">Waiting for previous results…</p>
+      )}
+
+      {!isBye && isScored && !editing && (
         <div className="flex items-center justify-between">
           <span className="text-xs text-gray-500">{winnerName} wins</span>
           {!readOnly && (
             <button
-              onClick={() => { setEntering(true); setError(""); }}
+              onClick={() => { setEditing(true); setError(""); }}
               className="text-xs hover:underline" style={{ color: "var(--hd-accent)" }}
             >
               Edit
@@ -358,38 +385,27 @@ function EliminationMatchCard({
         </div>
       )}
 
-      {!isBye && !isScored && !entering && !readOnly && p1 && p2 && (
-        <button
-          onClick={() => { setEntering(true); setError(""); }}
-          className="w-full text-sm bg-white border border-[#4242C3] text-[#4242C3] hover:bg-[#4242C3]/5 font-medium py-2 rounded-lg transition-colors"
-        >
-          Enter score
-        </button>
-      )}
-
-      {!isBye && !isScored && !p1 && !p2 && (
-        <p className="text-xs text-gray-400">Waiting for previous results…</p>
-      )}
-
-      {entering && p1 && p2 && (
-        <div className="space-y-2">
+      {showOptions && (
+        <div className="space-y-1">
           {eliminationScoreOptions(p1.name, p2.name).map((opt) => (
             <button
               key={opt.label}
               disabled={submitting}
               onClick={() => submitScore(opt)}
-              className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 text-gray-800 text-sm font-medium transition-colors disabled:opacity-50 hover:border-[#4242C3] hover:bg-[#4242C3]/10"
+              className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 text-gray-800 text-xs font-medium transition-colors disabled:opacity-50 hover:border-[#4242C3] hover:bg-[#4242C3]/10"
             >
               {opt.label}
             </button>
           ))}
-          <button
-            disabled={submitting}
-            onClick={() => { setEntering(false); setError(""); }}
-            className="w-full text-sm text-gray-400 hover:text-gray-600 py-1"
-          >
-            Cancel
-          </button>
+          {editing && (
+            <button
+              disabled={submitting}
+              onClick={() => { setEditing(false); setError(""); }}
+              className="w-full text-xs text-gray-400 hover:text-gray-600 py-1"
+            >
+              Cancel
+            </button>
+          )}
           {error && <p className="text-xs text-red-500">{error}</p>}
         </div>
       )}
@@ -419,7 +435,7 @@ function BracketSection({
     <div className="space-y-4">
       <h2 className="text-xl font-sans font-bold" style={{ color: "var(--hd-inverse-text)" }}>Elimination Bracket</h2>
       <div className="overflow-x-auto pb-2">
-        <div className="flex gap-6 min-w-max">
+        <div className="flex gap-4 min-w-max w-full">
           {Array.from({ length: maxRound }, (_, ri) => ri + 1).map((round) => {
             const roundMatches = matches
               .filter((m) => m.round === round)
@@ -427,8 +443,8 @@ function BracketSection({
             const label = roundLabel(round, maxRound);
 
             return (
-              <div key={round} className="flex flex-col" style={{ width: 220 }}>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+              <div key={round} className="flex flex-col flex-1 min-w-[200px]">
+                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--hd-inverse-text)" }}>
                   {label}
                 </p>
                 <div
@@ -741,16 +757,20 @@ export default function ManageClient({
 
           {/* Elimination bracket */}
           {tournament.eliminationMatches.length > 0 && (
-            <BracketSection
-              tournament={tournament}
-              onUpdate={handleUpdate}
-            />
+            <div className="pt-4 border-t" style={{ borderColor: "var(--hd-tertiary-bg)" }}>
+              <BracketSection
+                tournament={tournament}
+                onUpdate={handleUpdate}
+              />
+            </div>
           )}
         </div>
 
         {/* Final report — visible on screen and when printing */}
         {tournament.status === "complete" && (
-          <FinalReport tournament={tournament} />
+          <div className="pt-4 border-t print:border-0" style={{ borderColor: "var(--hd-tertiary-bg)" }}>
+            <FinalReport tournament={tournament} />
+          </div>
         )}
       </div>
     </main>
