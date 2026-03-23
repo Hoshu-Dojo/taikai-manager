@@ -353,14 +353,14 @@ export default function ViewClient({
   const topLabel = tournament.format === "round_robin" ? "Winner" : "Advances";
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6 print:bg-white print:p-0">
+    <main className="min-h-screen p-6 print:bg-white print:p-0" style={{ backgroundColor: "var(--hd-page-bg)" }}>
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Everything except the final report is hidden when printing */}
         <div className="print:hidden space-y-6">
           {/* Header */}
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{tournament.name}</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-serif font-semibold" style={{ color: "var(--hd-inverse-text)" }}>{tournament.name}</h1>
+            <p className="text-sm" style={{ color: "var(--hd-subtle-text)" }}>
               {tournament.date} · Live standings
             </p>
           </div>
@@ -388,7 +388,7 @@ export default function ViewClient({
           )}
 
           {/* Last updated */}
-          <p className="text-center text-xs text-gray-300">
+          <p className="text-center text-xs" style={{ color: "var(--hd-subtle-text)" }}>
             Updated {lastUpdated.toLocaleTimeString()}
           </p>
         </div>

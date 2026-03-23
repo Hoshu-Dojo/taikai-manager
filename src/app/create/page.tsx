@@ -150,7 +150,7 @@ export default function CreateTournament() {
             )}
 
             {players.length >= 4 && (
-              <p className="mt-2 text-sm text-blue-600 font-medium">
+              <p className="mt-2 text-sm font-medium" style={{ color: "var(--hd-accent)" }}>
                 {formatLabel(players.length)}
               </p>
             )}
@@ -165,7 +165,8 @@ export default function CreateTournament() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+            className="w-full disabled:opacity-50 font-semibold px-6 py-3 rounded-lg transition-colors"
+            style={{ backgroundColor: "var(--hd-accent)", color: "var(--hd-inverse-text)" }}
           >
             {loading ? "Creating…" : "Create Tournament"}
           </button>

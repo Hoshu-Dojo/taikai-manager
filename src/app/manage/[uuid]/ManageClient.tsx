@@ -102,7 +102,7 @@ function MatchCard({
           <span className="text-xs text-gray-500">{winner} wins</span>
           <button
             onClick={() => { setEntering(true); setError(""); }}
-            className="text-xs text-blue-500 hover:underline"
+            className="text-xs hover:underline" style={{ color: "var(--hd-accent)" }}
           >
             Edit
           </button>
@@ -125,7 +125,7 @@ function MatchCard({
               key={opt.label}
               disabled={submitting}
               onClick={() => submitScore(opt)}
-              className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 text-gray-800 text-sm font-medium transition-colors disabled:opacity-50"
+              className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 text-gray-800 text-sm font-medium transition-colors disabled:opacity-50 hover:border-[#4242C3] hover:bg-[#4242C3]/10"
             >
               {opt.label}
             </button>
@@ -348,7 +348,7 @@ function EliminationMatchCard({
           {!readOnly && (
             <button
               onClick={() => { setEntering(true); setError(""); }}
-              className="text-xs text-blue-500 hover:underline"
+              className="text-xs hover:underline" style={{ color: "var(--hd-accent)" }}
             >
               Edit
             </button>
@@ -376,7 +376,7 @@ function EliminationMatchCard({
               key={opt.label}
               disabled={submitting}
               onClick={() => submitScore(opt)}
-              className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 text-gray-800 text-sm font-medium transition-colors disabled:opacity-50"
+              className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 text-gray-800 text-sm font-medium transition-colors disabled:opacity-50 hover:border-[#4242C3] hover:bg-[#4242C3]/10"
             >
               {opt.label}
             </button>
@@ -501,7 +501,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
         <h2 className="text-xl font-bold text-gray-800">Final Report</h2>
         <button
           onClick={() => window.print()}
-          className="text-sm text-blue-600 hover:underline"
+          className="text-sm hover:underline" style={{ color: "var(--hd-accent)" }}
         >
           Print ↗
         </button>
@@ -693,28 +693,29 @@ export default function ManageClient({
     tournament.pools.every((p) => p.matches.every((m) => m.complete));
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6 print:bg-white print:p-0">
+    <main className="min-h-screen p-6 print:bg-white print:p-0" style={{ backgroundColor: "var(--hd-page-bg)" }}>
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Everything except the final report is hidden when printing */}
         <div className="print:hidden space-y-6">
           {/* Header */}
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{tournament.name}</h1>
-              <p className="text-sm text-gray-500">{tournament.date}</p>
+              <h1 className="text-2xl font-serif font-semibold" style={{ color: "var(--hd-inverse-text)" }}>{tournament.name}</h1>
+              <p className="text-sm" style={{ color: "var(--hd-subtle-text)" }}>{tournament.date}</p>
             </div>
             <a
               href={publicUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:underline whitespace-nowrap"
+              className="text-sm hover:underline whitespace-nowrap"
+              style={{ color: "var(--hd-accent)" }}
             >
               Public view ↗
             </a>
           </div>
 
           {/* Format info */}
-          <div className="bg-blue-50 border border-blue-100 rounded-xl px-5 py-3 text-sm text-blue-800">
+          <div className="rounded-xl px-5 py-3 text-sm border" style={{ backgroundColor: "var(--hd-secondary-bg)", borderColor: "var(--hd-tertiary-bg)", color: "var(--hd-inverse-text)" }}>
             {formatLabel}
           </div>
 
