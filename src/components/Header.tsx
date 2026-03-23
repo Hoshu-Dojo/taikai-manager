@@ -3,7 +3,7 @@ import Image from "next/image";
 export function Header() {
   return (
     <header
-      className="print:hidden flex items-center gap-4 px-6 py-4 border-b"
+      className="print:hidden flex items-center gap-4 px-6 py-3 border-b"
       style={{
         backgroundColor: "var(--hd-secondary-bg)",
         borderColor: "var(--hd-tertiary-bg)",
@@ -12,19 +12,19 @@ export function Header() {
       <Image
         src="/hoshu-dojo-logo.svg"
         alt="Hoshu Dojo"
-        width={40}
-        height={40}
+        width={36}
+        height={36}
         style={{ filter: "brightness(0) invert(1)" }}
       />
       <div>
         <div
-          className="font-serif text-lg font-semibold leading-tight"
+          className="font-sans font-bold text-sm tracking-widest uppercase leading-tight"
           style={{ color: "var(--hd-inverse-text)" }}
         >
           Hoshu Dojo
         </div>
         <div
-          className="text-xs tracking-widest uppercase"
+          className="font-sans text-xs tracking-widest uppercase"
           style={{ color: "var(--hd-subtle-text)" }}
         >
           Taikai
