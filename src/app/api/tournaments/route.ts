@@ -26,6 +26,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if (name.length > 100) {
+    return NextResponse.json({ error: "Tournament name must be 100 characters or fewer." }, { status: 400 });
+  }
+
+  if (playerData.length > 64) {
+    return NextResponse.json({ error: "A tournament may have at most 64 players." }, { status: 400 });
+  }
+
+  const invalidPlayer = playerData.find(
+    (p) => !p.name || p.name.trim().length === 0 || p.name.length > 80
+  );
+  if (invalidPlayer) {
+    return NextResponse.json({ error: "Each player must have a name of 80 characters or fewer." }, { status: 400 });
+  }
+
   const players: Player[] = playerData.map((p) => ({
     id: uuidv4(),
     name: p.name.trim(),
