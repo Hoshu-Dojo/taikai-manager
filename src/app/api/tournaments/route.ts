@@ -34,13 +34,14 @@ export async function POST(req: NextRequest) {
   }));
 
   const isSingleElim = formatOverride === "single_elimination";
+  const tournamentId = uuidv4();
 
   const format = isSingleElim ? "single_elimination" : determineFormat(players.length);
   const pools = isSingleElim ? [] : buildPools(players);
-  const eliminationMatches = isSingleElim ? generateSimpleBracket(players) : [];
+  const eliminationMatches = isSingleElim ? generateSimpleBracket(players, tournamentId) : [];
 
   const tournament: Tournament = {
-    id: uuidv4(),
+    id: tournamentId,
     name,
     date,
     status: isSingleElim ? "elimination" : "pool_play",

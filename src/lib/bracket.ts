@@ -1,6 +1,7 @@
 import { Tournament, Player, EliminationMatch } from "@/types";
 import { computeStandings } from "@/lib/standings";
 import { resolveRps } from "@/lib/standings";
+import { rankSeedValue } from "@/lib/ranks";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -197,14 +198,35 @@ export function generateEliminationBracket(tournament: Tournament): EliminationM
 }
 
 /**
- * Generates a single-elimination bracket from a pre-ordered player list.
- * Players are already in seed order: index 0 = seed 1, index 1 = seed 2, etc.
+ * Deterministic tiebreak for same-rank players during seeding.
+ * Produces a stable but arbitrary ordering based on player IDs and tournament ID.
  */
-export function generateSimpleBracket(players: Player[]): EliminationMatch[] {
-  const matchGrid = buildMatchGrid(players.length);
+function deterministicSeedTiebreak(id1: string, id2: string, tournamentId: string): number {
+  const hash = (s: string) => {
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
+    return h >>> 0;
+  };
+  return hash(`${tournamentId}:${id1}`) - hash(`${tournamentId}:${id2}`);
+}
+
+/**
+ * Generates a single-elimination bracket, seeding players by rank.
+ * Same-rank players are ordered deterministically but arbitrarily.
+ * Ranking order: 7D (strongest) → MK (weakest).
+ */
+export function generateSimpleBracket(players: Player[], tournamentId: string): EliminationMatch[] {
+  const sorted = [...players].sort((a, b) => {
+    const ra = rankSeedValue(a.rank);
+    const rb = rankSeedValue(b.rank);
+    if (ra !== rb) return ra - rb;
+    return deterministicSeedTiebreak(a.id, b.id, tournamentId);
+  });
+
+  const matchGrid = buildMatchGrid(sorted.length);
   assignSeeds(
     matchGrid,
-    players.map((p, i) => ({
+    sorted.map((p, i) => ({
       playerId: p.id,
       sourceLabel: `seed:${i + 1}`,
     }))

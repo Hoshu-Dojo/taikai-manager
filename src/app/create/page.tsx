@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { displayName } from "@/lib/utils";
+import { RANK_VALUES, normalizeRank } from "@/lib/ranks";
+
+const DAN_RANKS = RANK_VALUES.filter((r) => r.endsWith("D"));
+const KYU_RANKS = RANK_VALUES.filter((r) => r.endsWith("K") || r === "MK");
 
 export default function CreateTournament() {
   const router = useRouter();
@@ -17,14 +21,20 @@ export default function CreateTournament() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const isSingleElim = formatOverride === "single_elimination";
+
   function addPlayer() {
     const trimmed = playerInput.trim();
     if (!trimmed) return;
+    if (isSingleElim && !rankInput) {
+      setError("Rank is required for single elimination tournaments.");
+      return;
+    }
     if (players.some((p) => p.name === trimmed)) {
       setError("That name is already in the list.");
       return;
     }
-    setPlayers((prev) => [...prev, { name: trimmed, rank: rankInput.trim() }]);
+    setPlayers((prev) => [...prev, { name: trimmed, rank: rankInput }]);
     setPlayerInput("");
     setRankInput("");
     setError("");
@@ -41,7 +51,8 @@ export default function CreateTournament() {
       let pRank: string;
       if (commaIdx !== -1) {
         pName = line.slice(0, commaIdx).trim();
-        pRank = line.slice(commaIdx + 1).trim();
+        const rawRank = line.slice(commaIdx + 1).trim();
+        pRank = normalizeRank(rawRank) ?? rawRank;
       } else {
         pName = line;
         pRank = "";
@@ -77,12 +88,12 @@ export default function CreateTournament() {
 
   function formatLabel(count: number): string {
     if (count < 4) return "";
-    if (formatOverride === "single_elimination") {
+    if (isSingleElim) {
       const bracket = Math.pow(2, Math.ceil(Math.log2(count)));
       const byes = bracket - count;
       return `${count} players → single elimination bracket${byes > 0 ? ` · ${byes} bye${byes > 1 ? "s" : ""}` : ""}`;
     }
-    if (count <= 8) return `${count} players → single round-robin`;
+    if (count <= 5) return `${count} players → single round-robin`;
     const pools = Math.floor(count / 3);
     return `${count} players → ${pools} pools of 3–4 · top 1 per pool advances`;
   }
@@ -94,6 +105,10 @@ export default function CreateTournament() {
     if (!name.trim()) { setError("Enter a tournament name."); return; }
     if (!date) { setError("Enter a date."); return; }
     if (players.length < 4) { setError("Add at least 4 players."); return; }
+    if (isSingleElim && players.some((p) => !p.rank)) {
+      setError("All participants need a rank for single elimination tournaments.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -103,7 +118,7 @@ export default function CreateTournament() {
         body: JSON.stringify({
           name: name.trim(),
           date,
-          formatOverride: formatOverride === "single_elimination" ? "single_elimination" : undefined,
+          formatOverride: isSingleElim ? "single_elimination" : undefined,
           players: players.map((p) => ({ name: p.name, rank: p.rank || undefined })),
         }),
       });
@@ -163,6 +178,11 @@ export default function CreateTournament() {
             <div className="flex items-center justify-between mb-1">
               <label htmlFor="player-name" className="block text-sm font-medium" style={{ color: "var(--hd-inverse-text)" }}>
                 Participants
+                {isSingleElim && (
+                  <span className="ml-2 text-xs font-normal" style={{ color: "var(--hd-subtle-text)" }}>
+                    seeded automatically by rank
+                  </span>
+                )}
               </label>
               <button
                 type="button"
@@ -181,10 +201,12 @@ export default function CreateTournament() {
                   value={bulkInput}
                   onChange={(e) => setBulkInput(e.target.value)}
                   rows={6}
-                  placeholder={"Tanaka Kenji, 4-dan\nYamamoto Hiroshi\nSmith Sarah, 3-dan"}
+                  placeholder={"Tanaka Kenji, 5D\nYamamoto Hiroshi, 4-dan\nSmith Sarah, 3kyu"}
                   className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3] font-mono text-sm"
                 />
-                <p className="text-xs text-gray-500">One name per line. Rank is optional — add a comma after the name: <em>Tanaka Kenji, 4-dan</em></p>
+                <p className="text-xs text-gray-500">
+                  One name per line. Rank after a comma: <em>Tanaka Kenji, 5D</em> or <em>Tanaka Kenji, 5-dan</em>
+                </p>
                 <button
                   type="button"
                   onClick={addBulk}
@@ -206,14 +228,20 @@ export default function CreateTournament() {
                     placeholder="Name"
                     className="flex-1 bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
                   />
-                  <input
-                    type="text"
+                  <select
                     value={rankInput}
                     onChange={(e) => setRankInput(e.target.value)}
-                    onKeyDown={handlePlayerKeyDown}
-                    placeholder="5D"
-                    className="w-20 bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
-                  />
+                    className="w-24 bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
+                  >
+                    {!isSingleElim && <option value="">—</option>}
+                    {isSingleElim && <option value="" disabled>Rank</option>}
+                    <optgroup label="Dan">
+                      {DAN_RANKS.map((r) => <option key={r} value={r}>{r}</option>)}
+                    </optgroup>
+                    <optgroup label="Kyu">
+                      {KYU_RANKS.map((r) => <option key={r} value={r}>{r}</option>)}
+                    </optgroup>
+                  </select>
                   <button
                     type="button"
                     onClick={addPlayer}
@@ -222,22 +250,32 @@ export default function CreateTournament() {
                     Add
                   </button>
                 </div>
-                <p className="mt-1 text-xs text-gray-500">Rank is optional — e.g. 5D, 3K, 初段</p>
+                {!isSingleElim && (
+                  <p className="mt-1 text-xs text-gray-500">Rank is optional.</p>
+                )}
               </>
             )}
 
             {players.length > 0 && (
               <ul className="mt-3 space-y-1">
-                {players.map((p) => (
+                {players.map((p, i) => (
                   <li
                     key={p.name}
                     className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-2 text-gray-800"
                   >
-                    <span>{displayName(p)}</span>
+                    <span className="flex items-center gap-2">
+                      {isSingleElim && (
+                        <span className="text-xs font-mono text-gray-400 w-5 text-right shrink-0">{i + 1}.</span>
+                      )}
+                      {displayName(p)}
+                      {isSingleElim && !p.rank && (
+                        <span className="text-xs text-red-500">no rank</span>
+                      )}
+                    </span>
                     <button
                       type="button"
                       onClick={() => removePlayer(p.name)}
-                      className="text-gray-600 hover:text-red-600 text-sm transition-colors"
+                      className="text-gray-600 hover:text-red-600 text-sm transition-colors ml-4 shrink-0"
                     >
                       Remove
                     </button>
@@ -279,10 +317,10 @@ export default function CreateTournament() {
                       </span>
                       <p className="text-xs text-gray-500 mt-0.5">
                         {choice === "auto"
-                          ? players.length <= 8
+                          ? players.length <= 5
                             ? "Everyone plays everyone once. Final ranking by total flags."
                             : "Players compete in round-robin pools. Top finisher per pool advances to a knockout bracket."
-                          : "Straight knockout from the start. Participants are seeded by the order you enter them."}
+                          : "Straight knockout. Bracket seeded automatically by rank."}
                       </p>
                     </div>
                   </label>
@@ -291,6 +329,27 @@ export default function CreateTournament() {
             </div>
           )}
 
+          {/* Tiebreaker method — not applicable for single elimination */}
+          {!isSingleElim && (
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="accent-[#4242C3]"
+                />
+                <span className="text-sm" style={{ color: "var(--hd-inverse-text)" }}>
+                  Resolve 3-way ties with a run-off
+                </span>
+              </label>
+              <span
+                title="Rare: if three players finish with equal flags and each one has beaten one of the others (A beat B, B beat C, C beat A), head-to-head cannot break the tie. By default, a virtual rock-paper-scissors draw picks the winner instantly. Check this box to instead generate a run-off — the tied players replay a full round-robin among themselves to determine who advances."
+                className="text-xs cursor-help select-none"
+                style={{ color: "var(--hd-subtle-text)" }}
+              >
+                ⓘ
+              </span>
+            </div>
+          )}
 
           {error && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
