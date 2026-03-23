@@ -16,6 +16,7 @@ export interface Tournament {
 export interface Player {
   id: string;
   name: string;
+  rank?: string;
   poolId: string | null;
 }
 

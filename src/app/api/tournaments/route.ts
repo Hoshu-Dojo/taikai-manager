@@ -11,22 +11,23 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, date, playerNames } = body as {
+  const { name, date, players: playerData } = body as {
     name: string;
     date: string;
-    playerNames: string[];
+    players: { name: string; rank?: string }[];
   };
 
-  if (!name || !date || !playerNames || playerNames.length < 4) {
+  if (!name || !date || !playerData || playerData.length < 4) {
     return NextResponse.json(
       { error: "A tournament needs a name, date, and at least 4 players." },
       { status: 400 }
     );
   }
 
-  const players: Player[] = playerNames.map((n) => ({
+  const players: Player[] = playerData.map((p) => ({
     id: uuidv4(),
-    name: n.trim(),
+    name: p.name.trim(),
+    rank: p.rank?.trim() || undefined,
     poolId: null,
   }));
 

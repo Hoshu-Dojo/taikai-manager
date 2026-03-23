@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Tournament, EliminationMatch } from "@/types";
 import { computeStandings, computeWinReason, StandingRow } from "@/lib/standings";
 import { roundLabel } from "@/lib/bracket";
+import { displayName } from "@/lib/utils";
 
 const POLL_INTERVAL_MS = 7000;
 
@@ -90,12 +91,11 @@ function EliminationMatchBox({
   const p2 = match.player2Id ? players.find((p) => p.id === match.player2Id) : null;
   const isScored = match.flagsP1 !== null && match.flagsP2 !== null;
   const isBye = match.player1Source === "bye" || match.player2Source === "bye";
-  const winnerName = match.winnerId
-    ? players.find((p) => p.id === match.winnerId)?.name
-    : null;
+  const winnerPlayer = match.winnerId ? players.find((p) => p.id === match.winnerId) : null;
+  const winnerName = winnerPlayer ? displayName(winnerPlayer) : null;
 
-  const p1Display = p1?.name ?? (match.player1Source === "bye" ? "Bye" : "TBD");
-  const p2Display = p2?.name ?? (match.player2Source === "bye" ? "Bye" : "TBD");
+  const p1Display = p1 ? displayName(p1) : (match.player1Source === "bye" ? "Bye" : "TBD");
+  const p2Display = p2 ? displayName(p2) : (match.player2Source === "bye" ? "Bye" : "TBD");
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-3 text-sm space-y-1.5">
@@ -200,7 +200,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
       );
       const winnerFlags = finalMatch.winnerId === finalMatch.player1Id ? finalMatch.flagsP1 : finalMatch.flagsP2;
       const loserFlags  = finalMatch.winnerId === finalMatch.player1Id ? finalMatch.flagsP2 : finalMatch.flagsP1;
-      return `Won the final ${winnerFlags}–${loserFlags} against ${opponent?.name ?? "?"}`;
+      return `Won the final ${winnerFlags}–${loserFlags} against ${opponent ? displayName(opponent) : "?"}`;
     }
     if (tournament.format === "round_robin" && tournament.pools.length > 0) {
       return computeWinReason(tournament.pools[0], tournament.players, tournament.id);
@@ -225,7 +225,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
           <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide mb-1">
             Champion
           </p>
-          <p className="text-2xl font-bold text-yellow-900">{champion.name}</p>
+          <p className="text-2xl font-bold text-yellow-900">{displayName(champion)}</p>
           {championRationale && (
             <p className="text-sm text-yellow-700 mt-1">{championRationale}</p>
           )}
@@ -301,11 +301,11 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
                         return (
                           <div key={match.id} className="px-5 py-3 flex items-center justify-between text-sm">
                             <span className="text-gray-800">
-                              {p1?.name ?? "?"} vs {p2?.name ?? "?"}
+                              {p1 ? displayName(p1) : "?"} vs {p2 ? displayName(p2) : "?"}
                             </span>
                             <span className="text-gray-600 text-xs">
                               {match.flagsP1 !== null
-                                ? `${winner?.name ?? "?"} won ${winnerFlags}–${loserFlags} against ${loser?.name ?? "?"}`
+                                ? `${winner ? displayName(winner) : "?"} won ${winnerFlags}–${loserFlags} against ${loser ? displayName(loser) : "?"}`
                                 : "—"}
                             </span>
                           </div>

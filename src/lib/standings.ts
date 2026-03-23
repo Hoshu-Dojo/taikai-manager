@@ -1,4 +1,5 @@
 import { Pool, Player } from "@/types";
+import { displayName } from "@/lib/utils";
 
 export interface StandingRow {
   playerId: string;
@@ -256,7 +257,7 @@ export function computeStandings(
     const player = players.find((p) => p.id === id)!;
     return {
       playerId: id,
-      playerName: player.name,
+      playerName: displayName(player),
       flags: stats.flags,
       flagDifferential: stats.flagDifferential,
       matchesPlayed: stats.matchesPlayed,

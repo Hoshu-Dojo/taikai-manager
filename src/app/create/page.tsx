@@ -2,30 +2,33 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { displayName } from "@/lib/utils";
 
 export default function CreateTournament() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
   const [playerInput, setPlayerInput] = useState("");
-  const [players, setPlayers] = useState<string[]>([]);
+  const [rankInput, setRankInput] = useState("");
+  const [players, setPlayers] = useState<{ name: string; rank: string }[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   function addPlayer() {
     const trimmed = playerInput.trim();
     if (!trimmed) return;
-    if (players.includes(trimmed)) {
+    if (players.some((p) => p.name === trimmed)) {
       setError("That name is already in the list.");
       return;
     }
-    setPlayers((prev) => [...prev, trimmed]);
+    setPlayers((prev) => [...prev, { name: trimmed, rank: rankInput.trim() }]);
     setPlayerInput("");
+    setRankInput("");
     setError("");
   }
 
-  function removePlayer(name: string) {
-    setPlayers((prev) => prev.filter((p) => p !== name));
+  function removePlayer(playerName: string) {
+    setPlayers((prev) => prev.filter((p) => p.name !== playerName));
   }
 
   function handlePlayerKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -55,7 +58,7 @@ export default function CreateTournament() {
       const res = await fetch("/api/tournaments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), date, playerNames: players }),
+        body: JSON.stringify({ name: name.trim(), date, players: players.map((p) => ({ name: p.name, rank: p.rank || undefined })) }),
       });
 
       if (!res.ok) {
@@ -81,10 +84,11 @@ export default function CreateTournament() {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "var(--hd-inverse-text)" }}>
+            <label htmlFor="tournament-name" className="block text-sm font-medium mb-1" style={{ color: "var(--hd-inverse-text)" }}>
               Tournament name
             </label>
             <input
+              id="tournament-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -95,10 +99,11 @@ export default function CreateTournament() {
 
           {/* Date */}
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "var(--hd-inverse-text)" }}>
+            <label htmlFor="tournament-date" className="block text-sm font-medium mb-1" style={{ color: "var(--hd-inverse-text)" }}>
               Date
             </label>
             <input
+              id="tournament-date"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
@@ -108,17 +113,26 @@ export default function CreateTournament() {
 
           {/* Players */}
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "var(--hd-inverse-text)" }}>
+            <label htmlFor="player-name" className="block text-sm font-medium mb-1" style={{ color: "var(--hd-inverse-text)" }}>
               Participants
             </label>
             <div className="flex gap-2">
               <input
+                id="player-name"
                 type="text"
                 value={playerInput}
                 onChange={(e) => setPlayerInput(e.target.value)}
                 onKeyDown={handlePlayerKeyDown}
-                placeholder="Enter a name and press Add or Enter"
+                placeholder="Name"
                 className="flex-1 bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
+              />
+              <input
+                type="text"
+                value={rankInput}
+                onChange={(e) => setRankInput(e.target.value)}
+                onKeyDown={handlePlayerKeyDown}
+                placeholder="5D"
+                className="w-20 bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
               />
               <button
                 type="button"
@@ -128,19 +142,20 @@ export default function CreateTournament() {
                 Add
               </button>
             </div>
+            <p className="mt-1 text-xs text-gray-500">Rank is optional — e.g. 5D, 3K, 初段</p>
 
             {players.length > 0 && (
               <ul className="mt-3 space-y-1">
                 {players.map((p) => (
                   <li
-                    key={p}
+                    key={p.name}
                     className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-2 text-gray-800"
                   >
-                    <span>{p}</span>
+                    <span>{displayName(p)}</span>
                     <button
                       type="button"
-                      onClick={() => removePlayer(p)}
-                      className="text-gray-400 hover:text-red-500 text-sm transition-colors"
+                      onClick={() => removePlayer(p.name)}
+                      className="text-gray-600 hover:text-red-600 text-sm transition-colors"
                     >
                       Remove
                     </button>
