@@ -70,7 +70,7 @@ export default function HelpPage() {
             </Step>
             <Step number={4}>Tap <strong>Create Tournament</strong>. The app determines the format automatically based on how many players you entered.</Step>
             <Note>
-              <strong>Format rules:</strong> 4–8 players → single round-robin (everyone plays everyone). 9 or more players → pools of 3 (with a pool of 4 here and there when the numbers require it), with the top player from each pool advancing to a single-elimination bracket.
+              <strong>Format rules:</strong> 4–5 players → single round-robin (everyone plays everyone). 6 or more players → pools of 3 (with a pool of 4 here and there when the numbers require it), with the top player from each pool advancing to a single-elimination bracket.
             </Note>
           </Subsection>
 
@@ -114,7 +114,11 @@ export default function HelpPage() {
               </div>
               <div className="flex gap-2">
                 <span className="font-bold" style={{ color: "var(--hd-accent)" }}>3.</span>
-                <p><strong>Virtual rock-paper-scissors.</strong> If still tied, a simulated janken bout decides. This is deterministic — the same players in the same tournament always get the same result, decided at tournament creation, not in the moment.</p>
+                <p><strong>Run-off match.</strong> If a circular 3-way tie remains (A beat B, B beat C, C beat A, all with equal margins), those players play a fresh mini round-robin to break it. The bracket waits until the run-off is complete.</p>
+              </div>
+              <div className="flex gap-2">
+                <span className="font-bold" style={{ color: "var(--hd-accent)" }}>4.</span>
+                <p><strong>Virtual rock-paper-scissors (backstop only).</strong> If the run-off itself produces another circular tie, a simulated janken bout decides. This is deterministic — the same players in the same tournament always get the same result.</p>
               </div>
             </div>
             <Note>

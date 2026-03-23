@@ -3,7 +3,7 @@
 **Project:** Hoshu Dojo Taikai Manager
 **Owner:** Tom Groendal
 **Date:** 2026-03-22
-**Status:** Phase 3 next (Phases 0, 1, and 2 complete)
+**Status:** Phase 6 next (Phases 0–5 and 8 complete)
 
 ---
 
@@ -31,23 +31,29 @@ During the **elimination bracket** (9+ participants only), flags are still recor
 
 When two or more players have the same total flag count:
 1. Head-to-head flag count in the direct match between tied players
-2. Automated draw of lots (see below)
+2. Flag differential across all pool matches (flags scored minus flags conceded)
+3. **Run-off match** — a fresh mini round-robin played by the tied players (see below)
+4. Automated draw of lots (RPS — absolute backstop only)
 
-RPS is only reachable in a 3-way (or larger) circular tie — e.g. A beat B, B beat C, C beat A, all by the same margins — since a 2-player tie is always resolved by head-to-head (they played each other directly).
+A 2-player tie is always resolved by head-to-head (they played each other directly). A run-off is only triggered by a circular 3-way tie — e.g. A beat B, B beat C, C beat A, all with equal margins.
 
 **This must be announced before the tournament begins.**
 
-### Automated Draw of Lots
+### Run-off Matches
 
-When tiebreaker 1 is exhausted, the app resolves the tie automatically using a deterministic rock-paper-scissors simulation (seeded by player IDs and tournament ID — not random, so the result is reproducible). The software generates a throw for each tied player, resolves the result, and displays an announcement:
+When tiebreaker 2 leaves a circular 3-way tie unresolved, the app prompts the organizer to generate a run-off: a new set of matches among the tied players only. Standings and bracket generation are blocked until the run-off is complete.
+
+If the run-off itself produces another circular tie (extremely unlikely), the app falls back to automated RPS.
+
+### Automated Draw of Lots (RPS Backstop)
+
+When all other tiebreakers are exhausted, the app resolves the tie using a deterministic rock-paper-scissors simulation (seeded by player IDs and tournament ID — not random, so the result is reproducible). The software generates a throw for each tied player, resolves the result, and displays an announcement:
 
 > *"Bob and Sarah were tied for the last position in the elimination round. Randomized results gave Bob rock and Sarah scissors. Bob advances to the elimination round. Better luck next time, Sarah!"*
 
-**Alternative: run-off match.** For small tournaments where time allows, a live run-off match is cleaner and more dramatic. Choosing between RPS and run-off will be a creation-time setting (see Phase 4).
-
 This mechanism is used for:
 
-- Determining pool standings when head-to-head is equal
+- Determining pool standings when head-to-head and run-off are both equal
 - Assigning byes in the elimination bracket when seeding is otherwise equal
 
 ---
@@ -56,14 +62,13 @@ This mechanism is used for:
 
 | Participants | Format |
 |---|---|
-| 4–8 | Single pool, pure round-robin. Final ranking = total flags. No elimination bracket. |
-| 9–16 | 2–3 pools of 4–5. Round-robin within each pool. **Top 1 per pool** advances to single-elimination finals (configurable at creation time). |
-| 17–30 | 4–6 pools of 4–5. Same structure, larger elimination bracket. **Top 1 per pool** advances (configurable at creation time). |
+| 4–5 | Single pool, pure round-robin. Final ranking = total flags. No elimination bracket. |
+| 6+ | Pools of 3 (a pool of 4 when numbers require it). Round-robin within each pool. **Top 1 per pool** advances to single-elimination finals. |
 
-- Pool sizes are kept within ±1 person of each other.
+- Pools target 3 players; a pool of 4 is used when the count doesn't divide evenly.
 - Players are randomly assigned to pools.
 - Pool schedule is generated using the **circle method**: fix one player, rotate the rest clockwise each round. Produces N-1 rounds covering all pairings exactly once.
-- Elimination bracket seeds players by pool ranking (flags → flag differential → automated RPS). The bracket size rounds up to the next power of 2; extra slots are filled with **byes**, awarded to the highest seeds. Cross-seeding is applied where possible so pool-mates don't meet until the final.
+- Elimination bracket seeds players by pool ranking (flags → flag differential → run-off → RPS). The bracket size rounds up to the next power of 2; extra slots are filled with **byes**, awarded to the highest seeds. Cross-seeding is applied where possible so pool-mates don't meet until the final.
 
 ---
 
@@ -180,7 +185,7 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Score entry for each elimination match, same as pool play
 - Final report: full results, flag totals, bracket outcomes, printable
 
-**Phase 3 — Deploy to Vercel** · 🔄 Next · — Not tested
+**Phase 3 — Deploy to Vercel** · ✅ Complete · ✅ Tested
 
 - Connect GitHub repo to Vercel (auto-deploy on push)
 - Swap local JSON storage for Upstash Redis via Vercel Marketplace (JSON blobs by UUID key, free tier)
@@ -188,7 +193,7 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Set environment variables in Vercel dashboard (Redis connection string)
 - End-to-end test with a simulated real tournament
 
-**Phase 4 — Hoshu Dojo Branding** · ⬜ Not started · — Not tested
+**Phase 4 — Hoshu Dojo Branding** · ✅ Complete · ✅ Tested
 
 - Extract color palette and fonts from hoshudojo.com (or use supplied assets)
 - Add Hoshu Dojo logo to header on manage and public view pages (SVG/PNG from Tom or pulled from site)
@@ -196,16 +201,16 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Style the tournament creation/home page to match the main site
 - Add a "Taikai" link to the hoshudojo.com site navigation (one-line edit)
 
-**Phase 5 — Polish** · ⬜ Not started · — Not tested
+**Phase 5 — Polish** · ✅ Complete · ✅ Tested
 
 - Mobile-first score entry refinements: large tap targets, no misclicks courtside
 - Projected display mode: full-screen leaderboard sized for TV/projector
-- CSV upload for participant names at tournament creation
-- Bracket size choice at creation time: how many players advance per pool to the elimination bracket (default: top 1; organizer can select top 2 or top 3 for larger events)
-- Tiebreaker method choice at creation time: RPS (default) or run-off match
+- Bulk paste for participant names at tournament creation (CSV upload deferred)
+- Top 1 per pool advances — fixed, not configurable at creation
+- Circular-tie run-off replaces RPS as primary tiebreaker; RPS retained as absolute backstop only
 - QR code on organizer screen linking to public display URL
 - Improved error messages and recovery flows
-- **User documentation page** accessible from `taikai.hoshudojo.com` — explains the flag system, tiebreaker logic, tournament formats, organizer vs. public URLs, and how to run a tournament end-to-end
+- **User documentation page** at `/help` — explains the flag system, tiebreaker logic, tournament formats, organizer vs. public URLs, and how to run a tournament end-to-end
 
 **Phase 6 — Multilingual** · ⬜ Future · — Not tested
 
@@ -221,7 +226,7 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Grade-based divisions (optional subdivision by rank)
 - Possibly: AJKF taikai regulations reference documentation within the app
 
-**Phase 8 — Simple Elimination Format** · ⬜ Future · — Not tested
+**Phase 8 — Simple Elimination Format** · ✅ Complete · — Not tested
 
 - New tournament type selectable at creation: **Single Elimination** (no pool play)
 - Participants are entered in rank order — the list itself is the seeding (1st entry = top seed)
@@ -287,18 +292,19 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Add a "Taikai" link to the hoshudojo.com site navigation (one-line edit to the main site)
 - **Assets:** Tom will supply logo file (SVG or PNG preferred); color palette and fonts can be extracted from hoshudojo.com if needed
 
-### Phase 5 — Polish
+### ~~Phase 5 — Polish~~ ✅ Complete
 
 *Goal: production-quality for a real event*
 
-- Mobile-first refinements for score entry (large buttons, no misclicks at courtside)
-- Projected display mode: a full-screen leaderboard view sized for a TV or projector
-- Tournament creation enhancements:
-  - CSV upload for participant names (instead of typing each one)
-  - Bracket size choice: how many players per pool advance to the elimination bracket — **Top 1** (default), Top 2, or Top 3. This is set once at creation and determines the bracket structure. Affects the "Open Questions" table entry on format selection.
-  - Tiebreaker method choice: **RPS** (default, instant, good for large tournaments with time pressure) or **run-off match** (live extra match, better for small tournaments)
-- QR code on organizer screen linking to public display
-- Better error handling and recovery (e.g., correct a score you entered wrong)
+- ~~Mobile-first refinements for score entry (large buttons, no misclicks at courtside)~~
+- ~~Projected display mode: a full-screen leaderboard view sized for a TV or projector~~
+- ~~Tournament creation enhancements:~~
+  - ~~Bulk paste for participant names (instead of typing each one; full CSV upload deferred)~~
+  - ~~Top 1 per pool advances — fixed, not organizer-configurable~~
+  - ~~Circular-tie run-off as primary tiebreaker; RPS as absolute backstop only~~
+- ~~QR code on organizer screen linking to public display~~
+- ~~Better error handling and recovery~~
+- ~~User documentation page at `/help`~~
 
 ### Phase 6 — Multilingual
 
@@ -320,17 +326,16 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Grade-based divisions (optional subdivision by rank)
 - Possibly: official translation of AJKF taikai regulations as reference documentation within the app
 
-### Phase 8 — Simple Elimination Format
+### ~~Phase 8 — Simple Elimination Format~~ ✅ Complete
 
 *Goal: support events that don't use pool play at all — straight knockout from the first match*
 
-- New tournament type at creation: **Single Elimination** (alongside the existing pool-play formats)
-- No pool phase — the bracket is generated immediately from the full participant list
-- Seeding: participants are entered in rank order at creation time — the order of the list is the seeding (first entry = top seed); no separate seeding step required
-- Byes assigned to the highest seeds when the participant count is not a power of 2 (same logic as the existing elimination bracket)
-- Scoring is the same flag-count system (majority of 3 judges); same match card UI
-- Bracket display and final report reuse the existing components — this is primarily a format-selection addition, not a UI rebuild
-- Useful for small informal events, team competitions, or situations where time is very limited
+- ~~New tournament type at creation: **Single Elimination** (alongside the existing pool-play formats)~~
+- ~~No pool phase — the bracket is generated immediately from the full participant list~~
+- ~~Seeding: participants are entered in rank order at creation time — the order of the list is the seeding (first entry = top seed); no separate seeding step required~~
+- ~~Byes assigned to the highest seeds when the participant count is not a power of 2 (same logic as the existing elimination bracket)~~
+- ~~Scoring is the same flag-count system (majority of 3 judges); same match card UI~~
+- ~~Bracket display and final report reuse the existing components — this is primarily a format-selection addition, not a UI rebuild~~
 
 ### Phase 9 — Traditional Bracket Visual
 
@@ -373,7 +378,7 @@ This means zero risk to the existing site.
 | Flag accumulation in a loss? | Yes — both sides keep their flags |
 | Pool assignment method | Random |
 | Format selection | Automatic based on participant count |
-| Post-pool format | Single-elimination bracket (skipped for ≤8 participants); number of advancers per pool is organizer-set at creation time (default: top 1) |
+| Post-pool format | Single-elimination bracket (skipped for ≤5 participants); top 1 per pool advances — fixed, not configurable |
 | Auth model | UUID secret link (no accounts) |
 | Mobile support | Mobile-first from Phase 1; full courtside use by Phase 4 |
 | Storage progression | JSON (local) → Upstash Redis via Vercel Marketplace (live) → PostgreSQL (robust) |

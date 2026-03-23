@@ -14,7 +14,8 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "mcp__perplexity__perplexity_research",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(grep:*)"
     ]
   }
 }
