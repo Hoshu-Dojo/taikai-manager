@@ -44,7 +44,7 @@ function StandingsTable({
       </div>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-gray-400 text-xs border-b border-gray-100">
+          <tr className="text-left text-gray-500 text-xs border-b border-gray-100">
             <th className="px-5 py-2">#</th>
             <th className="px-5 py-2">Player</th>
             <th className="px-5 py-2 text-right">Flags</th>
@@ -53,7 +53,7 @@ function StandingsTable({
         <tbody>
           {rows.map((row, i) => (
             <tr key={row.playerId} className="border-b border-gray-50 last:border-0">
-              <td className="px-5 py-3 text-gray-400 font-medium">{i + 1}</td>
+              <td className="px-5 py-3 text-gray-600 font-medium">{i + 1}</td>
               <td className="px-5 py-3 font-semibold text-gray-900">
                 <span className="flex items-center gap-2">
                   {row.playerName}
@@ -116,7 +116,7 @@ function EliminationMatchBox({
         )}
       </div>
       {isBye && winnerName && (
-        <p className="text-xs text-gray-400">{winnerName} — bye</p>
+        <p className="text-xs text-gray-600">{winnerName} — bye</p>
       )}
     </div>
   );
@@ -137,7 +137,7 @@ function BracketSection({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold text-gray-800">Elimination Bracket</h2>
+      <h2 className="text-lg font-sans font-bold" style={{ color: "var(--hd-inverse-text)" }}>Elimination Bracket</h2>
       <div className="overflow-x-auto pb-2">
         <div className="flex gap-6 min-w-max">
           {Array.from({ length: maxRound }, (_, ri) => ri + 1).map((round) => {
@@ -148,7 +148,7 @@ function BracketSection({
 
             return (
               <div key={round} className="flex flex-col" style={{ width: 200 }}>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--hd-inverse-text)" }}>
                   {label}
                 </p>
                 <div
@@ -244,7 +244,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
             </div>
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-400 text-xs border-b border-gray-100">
+                <tr className="text-left text-gray-500 text-xs border-b border-gray-100">
                   <th className="px-5 py-2">#</th>
                   <th className="px-5 py-2">Player</th>
                   <th className="px-5 py-2 text-right">Flags</th>
@@ -253,7 +253,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
               <tbody>
                 {standings.map((row, i) => (
                   <tr key={row.playerId} className="border-b border-gray-50 last:border-0">
-                    <td className="px-5 py-3 text-gray-400">{i + 1}</td>
+                    <td className="px-5 py-3 text-gray-600">{i + 1}</td>
                     <td className="px-5 py-3 font-medium text-gray-800">{row.playerName}</td>
                     <td className="px-5 py-3 text-right text-gray-700">{row.flags}</td>
                   </tr>
@@ -261,7 +261,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
               </tbody>
             </table>
             {standings.length > 0 && (
-              <p className="px-5 py-2 text-xs text-gray-400 border-t border-gray-50">
+              <p className="px-5 py-2 text-xs text-gray-600 border-t border-gray-50">
                 {standings[0].playerName} advances — {winReason}
               </p>
             )}
@@ -286,7 +286,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
                 const label = roundLabel(round, roundCount);
                 return (
                   <div key={round}>
-                    <p className="px-5 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide bg-gray-50">
+                    <p className="px-5 py-2 text-xs font-semibold text-gray-600 uppercase tracking-wide bg-gray-50">
                       {label}
                     </p>
                     {roundMatches
