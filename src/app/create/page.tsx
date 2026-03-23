@@ -236,7 +236,7 @@ export default function CreateTournament() {
             )}
 
             {players.length >= 4 && (
-              <p className="mt-2 text-sm font-medium" style={{ color: "var(--hd-accent)" }}>
+              <p className="mt-2 text-sm font-medium" style={{ color: "var(--hd-accent-secondary)" }}>
                 {formatLabel(players.length)}
               </p>
             )}
