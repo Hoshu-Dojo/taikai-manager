@@ -236,10 +236,17 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 
 **Phase 9 — Traditional Bracket Visual** · ⬜ Future · — Not tested
 
+- Fully remove RPS from code and documentation
 - Replace the current horizontal card layout with a proper left-to-right bracket tree on the public view
 - Matches connect with lines showing who advances where — the visual people expect from a tournament bracket
 - Completed matches show scores inline; upcoming matches show player names with empty score slots
 - Applies to both pool-play elimination finals and the simple elimination format from Phase 8
+
+** Phase 10 - E-mail confirmation** · ⬜ Future · — Not tested
+
+- Creating a new tournament sends you the relevant links to your e-mail if you enter it.
+- When a tournament finishes, the final report auto-sends to your e-mail
+
 
 ---
 
