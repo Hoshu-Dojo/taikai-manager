@@ -85,9 +85,15 @@ function StandingsTable({
   );
 }
 
-// ─── Elimination bracket (read-only) ─────────────────────────────────────────
+// ─── Elimination bracket (read-only tree) ─────────────────────────────────────
 
-function EliminationMatchBox({
+const MATCH_W = 200;
+const MATCH_H = 72;
+const SLOT_H = 96;   // vertical space per first-round slot
+const COL_GAP = 48;  // horizontal gap between columns (connector zone)
+const COL_TOTAL = MATCH_W + COL_GAP;
+
+function MatchNode({
   match,
   players,
 }: {
@@ -98,84 +104,137 @@ function EliminationMatchBox({
   const p2 = match.player2Id ? players.find((p) => p.id === match.player2Id) : null;
   const isScored = match.flagsP1 !== null && match.flagsP2 !== null;
   const isBye = match.player1Source === "bye" || match.player2Source === "bye";
-  const winnerPlayer = match.winnerId ? players.find((p) => p.id === match.winnerId) : null;
-  const winnerName = winnerPlayer ? displayName(winnerPlayer) : null;
 
   const p1Display = p1 ? displayName(p1) : (match.player1Source === "bye" ? "Bye" : "TBD");
   const p2Display = p2 ? displayName(p2) : (match.player2Source === "bye" ? "Bye" : "TBD");
 
+  const p1Wins = isScored && match.winnerId === match.player1Id;
+  const p2Wins = isScored && match.winnerId === match.player2Id;
+
+  if (isBye) {
+    const advancer = match.player1Source === "bye" ? p2 : p1;
+    const advancerDisplay = advancer ? displayName(advancer) : "TBD";
+    return (
+      <div
+        className="bg-white border border-gray-200 rounded-lg overflow-hidden flex items-center"
+        style={{ width: MATCH_W, height: MATCH_H }}
+      >
+        <div className="flex items-center justify-between px-3 w-full">
+          <span className="text-sm font-medium text-gray-800 truncate">{advancerDisplay}</span>
+          <span className="text-xs text-gray-400 ml-2 shrink-0">bye</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-3 text-sm space-y-1.5">
-      <div>
-        <span className={isScored && match.winnerId === match.player1Id ? "font-bold text-gray-900" : "text-gray-600"}>
+    <div
+      className="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col"
+      style={{ width: MATCH_W, height: MATCH_H }}
+    >
+      <div className={`flex items-center justify-between px-3 flex-1 ${p1Wins ? "bg-green-50" : ""}`}>
+        <span className={`text-sm truncate ${p1Wins ? "font-bold text-gray-900" : "text-gray-600"}`}>
           {p1Display}
         </span>
         {isScored && (
-          <span className="ml-2 text-green-600 font-semibold text-xs">{match.flagsP1}</span>
+          <span className={`text-sm font-semibold ml-2 shrink-0 ${p1Wins ? "text-green-600" : "text-gray-400"}`}>
+            {match.flagsP1}
+          </span>
         )}
       </div>
-      <div>
-        <span className={isScored && match.winnerId === match.player2Id ? "font-bold text-gray-900" : "text-gray-600"}>
+      <div className="border-t border-gray-100 shrink-0" />
+      <div className={`flex items-center justify-between px-3 flex-1 ${p2Wins ? "bg-green-50" : ""}`}>
+        <span className={`text-sm truncate ${p2Wins ? "font-bold text-gray-900" : "text-gray-600"}`}>
           {p2Display}
         </span>
         {isScored && (
-          <span className="ml-2 text-green-600 font-semibold text-xs">{match.flagsP2}</span>
+          <span className={`text-sm font-semibold ml-2 shrink-0 ${p2Wins ? "text-green-600" : "text-gray-400"}`}>
+            {match.flagsP2}
+          </span>
         )}
       </div>
-      {isBye && winnerName && (
-        <p className="text-xs text-gray-600">{winnerName} — bye</p>
-      )}
     </div>
   );
 }
 
-function BracketSection({
-  tournament,
-}: {
-  tournament: Tournament;
-}) {
+function BracketSection({ tournament }: { tournament: Tournament }) {
   const matches = tournament.eliminationMatches;
   if (matches.length === 0) return null;
 
   const maxRound = Math.max(...matches.map((m) => m.round));
   const firstRoundCount = matches.filter((m) => m.round === 1).length;
-  const MATCH_H = 88;
-  const containerH = firstRoundCount * MATCH_H;
+  const totalW = maxRound * MATCH_W + (maxRound - 1) * COL_GAP;
+  const totalH = firstRoundCount * SLOT_H;
+
+  // Vertical center of a match box given its round and position
+  function cy(round: number, position: number): number {
+    const span = Math.pow(2, round - 1);
+    return ((position - 1) * span + span / 2) * SLOT_H;
+  }
+
+  // Left edge of a round's column
+  function lx(round: number): number {
+    return (round - 1) * COL_TOTAL;
+  }
+
+  // SVG connector paths: for each pair of round-r matches, draw bracket lines to round r+1
+  const connectors: string[] = [];
+  for (let r = 1; r < maxRound; r++) {
+    const roundMatches = matches
+      .filter((m) => m.round === r)
+      .sort((a, b) => a.position - b.position);
+    for (let i = 0; i < roundMatches.length; i += 2) {
+      const m1 = roundMatches[i];
+      const m2 = roundMatches[i + 1];
+      if (!m1 || !m2) continue;
+      const rx = lx(r) + MATCH_W;          // right edge of current round
+      const y1 = cy(r, m1.position);
+      const y2 = cy(r, m2.position);
+      const mx = rx + COL_GAP / 2;          // midpoint of gap (vertical bar x)
+      const my = (y1 + y2) / 2;             // midpoint y (= center of next-round match)
+      const nl = lx(r + 1);                 // left edge of next round
+      // Two horizontal stubs → vertical bar → horizontal stub to next match
+      connectors.push(
+        `M ${rx} ${y1} H ${mx} V ${y2} M ${rx} ${y2} H ${mx} M ${mx} ${my} H ${nl}`
+      );
+    }
+  }
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-sans font-bold" style={{ color: "var(--hd-inverse-text)" }}>Elimination Bracket</h2>
-      <div className="overflow-x-auto pb-2">
-        <div className="flex gap-6 min-w-max">
-          {Array.from({ length: maxRound }, (_, ri) => ri + 1).map((round) => {
-            const roundMatches = matches
-              .filter((m) => m.round === round)
-              .sort((a, b) => a.position - b.position);
-            const label = roundLabel(round, maxRound);
-
-            return (
-              <div key={round} className="flex flex-col" style={{ width: 200 }}>
-                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--hd-inverse-text)" }}>
-                  {label}
-                </p>
-                <div
-                  className="flex flex-col"
-                  style={{
-                    height: containerH,
-                    justifyContent: "space-around",
-                  }}
-                >
-                  {roundMatches.map((match) => (
-                    <EliminationMatchBox
-                      key={match.id}
-                      match={match}
-                      players={tournament.players}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+      <h2 className="text-lg font-sans font-bold" style={{ color: "var(--hd-inverse-text)" }}>
+        Elimination Bracket
+      </h2>
+      <div className="overflow-x-auto pb-4">
+        {/* Round labels */}
+        <div className="flex pb-3" style={{ gap: COL_GAP, width: totalW }}>
+          {Array.from({ length: maxRound }, (_, i) => i + 1).map((round) => (
+            <div key={round} className="shrink-0" style={{ width: MATCH_W }}>
+              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--hd-inverse-text)" }}>
+                {roundLabel(round, maxRound)}
+              </p>
+            </div>
+          ))}
+        </div>
+        {/* Bracket canvas */}
+        <div style={{ position: "relative", width: totalW, height: totalH }}>
+          <svg
+            width={totalW}
+            height={totalH}
+            style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+          >
+            {connectors.map((d, i) => (
+              <path key={i} d={d} stroke="rgba(66,66,195,0.5)" strokeWidth={1.5} fill="none" />
+            ))}
+          </svg>
+          {matches.map((match) => (
+            <div
+              key={match.id}
+              style={{ position: "absolute", left: lx(match.round), top: cy(match.round, match.position) - MATCH_H / 2 }}
+            >
+              <MatchNode match={match} players={tournament.players} />
+            </div>
+          ))}
         </div>
       </div>
     </div>

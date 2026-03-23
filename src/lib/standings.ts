@@ -10,52 +10,6 @@ export interface StandingRow {
   wins: number;
 }
 
-export interface RpsResult {
-  player1Id: string;
-  player2Id: string;
-  player1Throw: "rock" | "paper" | "scissors";
-  player2Throw: "rock" | "paper" | "scissors";
-  winnerId: string;
-}
-
-// Deterministic "throw" seeded by a string — same inputs always produce same result.
-function deterministicThrow(seed: string): "rock" | "paper" | "scissors" {
-  let hash = 5381;
-  for (let i = 0; i < seed.length; i++) {
-    hash = ((hash << 5) + hash) ^ seed.charCodeAt(i);
-    hash |= 0; // keep 32-bit
-  }
-  const throws = ["rock", "paper", "scissors"] as const;
-  return throws[Math.abs(hash) % 3];
-}
-
-const RPS_BEATS: Record<string, string> = {
-  rock: "scissors",
-  scissors: "paper",
-  paper: "rock",
-};
-
-export function resolveRps(
-  player1Id: string,
-  player2Id: string,
-  poolId: string,
-  tournamentId: string
-): RpsResult {
-  const throw1 = deterministicThrow(`${tournamentId}:${poolId}:${player1Id}`);
-  const throw2 = deterministicThrow(`${tournamentId}:${poolId}:${player2Id}`);
-
-  let winnerId: string;
-  if (throw1 === throw2) {
-    // True tie in RPS — use lexicographic order as final fallback
-    winnerId = player1Id < player2Id ? player1Id : player2Id;
-  } else if (RPS_BEATS[throw1] === throw2) {
-    winnerId = player1Id;
-  } else {
-    winnerId = player2Id;
-  }
-
-  return { player1Id, player2Id, player1Throw: throw1, player2Throw: throw2, winnerId };
-}
 
 // Stats from regular (non-runoff) matches only.
 function getStats(playerId: string, pool: Pool) {
@@ -157,8 +111,8 @@ function sortTiedGroup(
     const minRf = Math.min(...[...rfMap.values()]);
 
     if (maxRf === minRf) {
-      // Run-off also circular — RPS as absolute backstop
-      return sortByRps(group, pool.id, tournamentId);
+      // Run-off also circular — return unresolved; another run-off will be generated
+      return group;
     }
 
     const sortedByRunoff = [...group].sort((a, b) => (rfMap.get(b) ?? 0) - (rfMap.get(a) ?? 0));
@@ -195,32 +149,16 @@ function resolveSubGroups(
   return result;
 }
 
-/**
- * For a group still fully tied after all stats, use RPS.
- * For 2 players: single RPS bout.
- * For 3+ players: sort by RPS score (count how many others each player beats).
- */
-function sortByRps(group: string[], poolId: string, tournamentId: string): string[] {
-  if (group.length === 2) {
-    const result = resolveRps(group[0], group[1], poolId, tournamentId);
-    return result.winnerId === group[0] ? [group[0], group[1]] : [group[1], group[0]];
-  }
-
-  const rpsScores = new Map<string, number>(group.map((id) => [id, 0]));
-  for (let i = 0; i < group.length; i++) {
-    for (let j = i + 1; j < group.length; j++) {
-      const result = resolveRps(group[i], group[j], poolId, tournamentId);
-      rpsScores.set(result.winnerId, (rpsScores.get(result.winnerId) ?? 0) + 1);
-    }
-  }
-  return [...group].sort((a, b) => (rpsScores.get(b) ?? 0) - (rpsScores.get(a) ?? 0));
-}
 
 /**
- * Detects a circular tie in the pool — a group of 3+ players with equal total flags
- * whose head-to-head results are also equal (A beat B, B beat C, C beat A).
- * Returns the tied player IDs, or null if no circular tie exists.
- * Only checks when all regular (non-runoff) matches are complete.
+ * Detects whether this pool currently needs a run-off match.
+ * Returns the tied player IDs if a run-off is needed now, or null otherwise.
+ *
+ * A run-off is needed when:
+ * - All regular matches are complete, 3+ players are tied on flags,
+ *   and head-to-head is also equal (circular tie) — AND no run-off exists yet.
+ * - OR: a run-off exists, all its matches are complete, but the run-off is
+ *   itself circular — so another run-off is needed.
  */
 export function detectCircularTie(pool: Pool, tournamentId: string): string[] | null {
   const regularMatches = pool.matches.filter((m) => !m.isRunoff);
@@ -242,9 +180,36 @@ export function detectCircularTie(pool: Pool, tournamentId: string): string[] | 
     const h2hVals = group.map((id) =>
       headToHeadFlags(id, group.filter((x) => x !== id), regularPool)
     );
-    if (Math.max(...h2hVals) === Math.min(...h2hVals)) {
+    if (Math.max(...h2hVals) !== Math.min(...h2hVals)) continue;
+
+    // Circular tie confirmed. Check run-off state.
+    const runoffMatches = pool.matches.filter(
+      (m) => m.isRunoff && group.includes(m.player1Id) && group.includes(m.player2Id)
+    );
+
+    if (runoffMatches.length === 0) {
+      // No run-off yet — first run-off needed
       return group;
     }
+
+    if (!runoffMatches.every((m) => m.complete)) {
+      // Run-off in progress — wait
+      return null;
+    }
+
+    // Run-off complete — check if it's also circular
+    const rfMap = new Map<string, number>(
+      group.map((id) => [id, runoffFlags(id, group.filter((x) => x !== id), pool)])
+    );
+    const maxRf = Math.max(...[...rfMap.values()]);
+    const minRf = Math.min(...[...rfMap.values()]);
+    if (maxRf === minRf) {
+      // Run-off also circular — another run-off needed
+      return group;
+    }
+
+    // Run-off resolved the tie
+    return null;
   }
   return null;
 }

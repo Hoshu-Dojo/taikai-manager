@@ -38,11 +38,10 @@ export async function POST(
     );
   }
 
-  // Verify no pool has an unresolved circular tie (run-off not yet generated)
-  const needsRunoff = tournament.pools.some((pool) => {
-    const hasRunoff = pool.matches.some((m) => m.isRunoff);
-    return !hasRunoff && detectCircularTie(pool, tournament.id) !== null;
-  });
+  // Verify no pool has an unresolved circular tie requiring a run-off
+  const needsRunoff = tournament.pools.some(
+    (pool) => detectCircularTie(pool, tournament.id) !== null
+  );
   if (needsRunoff) {
     return NextResponse.json(
       { error: "A run-off is required before generating the bracket. Generate and complete the run-off first." },

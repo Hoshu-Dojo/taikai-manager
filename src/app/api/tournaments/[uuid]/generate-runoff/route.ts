@@ -20,10 +20,6 @@ export async function POST(
     return NextResponse.json({ error: "Pool not found." }, { status: 404 });
   }
 
-  if (pool.matches.some((m) => m.isRunoff)) {
-    return NextResponse.json({ error: "Run-off already generated for this pool." }, { status: 400 });
-  }
-
   const tiedPlayerIds = detectCircularTie(pool, tournament.id);
   if (!tiedPlayerIds) {
     return NextResponse.json({ error: "No circular tie detected in this pool." }, { status: 400 });

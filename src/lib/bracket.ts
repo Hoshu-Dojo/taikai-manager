@@ -1,6 +1,5 @@
 import { Tournament, Player, EliminationMatch } from "@/types";
 import { computeStandings } from "@/lib/standings";
-import { resolveRps } from "@/lib/standings";
 import { rankSeedValue } from "@/lib/ranks";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -59,12 +58,11 @@ function seedPoolAdvancers(tournament: Tournament): SeedEntry[] {
     }
   }
 
-  // Sort best-to-worst; use "seeding" as the RPS context for cross-pool ties
+  // Sort best-to-worst; use player ID order as a stable tiebreaker for cross-pool ties
   entries.sort((a, b) => {
     if (b.flags !== a.flags) return b.flags - a.flags;
     if (b.flagDifferential !== a.flagDifferential) return b.flagDifferential - a.flagDifferential;
-    const rps = resolveRps(a.playerId, b.playerId, "seeding", tournament.id);
-    return rps.winnerId === a.playerId ? -1 : 1;
+    return a.playerId < b.playerId ? -1 : 1;
   });
 
   return entries;

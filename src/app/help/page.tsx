@@ -114,11 +114,7 @@ export default function HelpPage() {
               </div>
               <div className="flex gap-2">
                 <span className="font-bold" style={{ color: "var(--hd-accent)" }}>3.</span>
-                <p><strong>Run-off match.</strong> If a circular 3-way tie remains (A beat B, B beat C, C beat A, all with equal margins), those players play a fresh mini round-robin to break it. The bracket waits until the run-off is complete.</p>
-              </div>
-              <div className="flex gap-2">
-                <span className="font-bold" style={{ color: "var(--hd-accent)" }}>4.</span>
-                <p><strong>Virtual rock-paper-scissors (backstop only).</strong> If the run-off itself produces another circular tie, a simulated janken bout decides. This is deterministic — the same players in the same tournament always get the same result.</p>
+                <p><strong>Run-off match.</strong> If a circular 3-way tie remains (A beat B, B beat C, C beat A, all with equal margins), those players play a fresh mini round-robin to break it. The bracket waits until the run-off is complete. If the run-off is also circular, another run-off is held.</p>
               </div>
             </div>
             <Note>

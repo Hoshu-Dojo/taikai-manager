@@ -257,9 +257,8 @@ function PoolSection({
   const poolComplete = completed === pool.matches.length;
 
   // Circular tie detection for run-off prompt
-  const regularAllComplete = regularMatches.every((m) => m.complete);
-  const circularTie = regularAllComplete ? detectCircularTie(pool, tournament.id) : null;
-  const needsRunoff = circularTie !== null && runoffMatchesList.length === 0;
+  const circularTie = detectCircularTie(pool, tournament.id);
+  const needsRunoff = circularTie !== null;
 
   // Sequential match numbers across all rounds in this pool
   let matchNum = 0;
@@ -878,10 +877,7 @@ export default function ManageClient({
     tournament.format === "pools_elimination" &&
     tournament.status === "pool_play" &&
     tournament.pools.every((p) => p.matches.every((m) => m.complete)) &&
-    !tournament.pools.some((p) => {
-      const hasRunoff = p.matches.some((m) => m.isRunoff);
-      return !hasRunoff && detectCircularTie(p, tournament.id) !== null;
-    });
+    !tournament.pools.some((p) => detectCircularTie(p, tournament.id) !== null);
 
   return (
     <main className="min-h-screen p-6 print:bg-white print:p-0" style={{ backgroundColor: "var(--hd-page-bg)" }}>
