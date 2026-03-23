@@ -169,7 +169,7 @@ function PoolSection({
     tournament.players,
     tournament.id
   );
-  const winReason = computeWinReason(pool, tournament.players, tournament.id);
+  const winReason = computeWinReason(pool, tournament.players, tournament.id, tournament.tiebreakerMethod);
 
   const rounds = new Map<number, Match[]>();
   for (const match of pool.matches) {
@@ -505,7 +505,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
       return `Won the final ${winnerFlags}–${loserFlags} against ${opponent ? displayName(opponent) : "?"}`;
     }
     if (tournament.format === "round_robin" && tournament.pools.length > 0) {
-      return computeWinReason(tournament.pools[0], tournament.players, tournament.id);
+      return computeWinReason(tournament.pools[0], tournament.players, tournament.id, tournament.tiebreakerMethod);
     }
     return null;
   })();
@@ -546,7 +546,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
       {/* Pool results */}
       {tournament.pools.map((pool) => {
         const standings = computeStandings(pool, tournament.players, tournament.id);
-        const winReason = computeWinReason(pool, tournament.players, tournament.id);
+        const winReason = computeWinReason(pool, tournament.players, tournament.id, tournament.tiebreakerMethod);
         return (
           <div key={pool.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100 bg-gray-50">

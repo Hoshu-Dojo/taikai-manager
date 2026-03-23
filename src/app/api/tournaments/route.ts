@@ -11,10 +11,11 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, date, players: playerData } = body as {
+  const { name, date, players: playerData, tiebreakerMethod } = body as {
     name: string;
     date: string;
     players: { name: string; rank?: string }[];
+    tiebreakerMethod?: "rps" | "runoff";
   };
 
   if (!name || !date || !playerData || playerData.length < 4) {
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest) {
     date,
     status: "pool_play",
     format,
+    tiebreakerMethod: tiebreakerMethod === "runoff" ? "runoff" : "rps",
     players,
     pools,
     eliminationMatches: [],

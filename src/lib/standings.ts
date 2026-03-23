@@ -185,7 +185,8 @@ function sortByRps(group: string[], poolId: string, tournamentId: string): strin
 export function computeWinReason(
   pool: Pool,
   players: Player[],
-  tournamentId: string
+  tournamentId: string,
+  tiebreakerMethod?: "rps" | "runoff"
 ): string {
   const standings = computeStandings(pool, players, tournamentId);
   if (standings.length === 0) return "";
@@ -218,7 +219,9 @@ export function computeWinReason(
     return `Tied with ${nameStr} on flags — won head-to-head`;
   }
 
-  return `Tied with ${nameStr} on flags — decided by virtual jankenpon (rock-paper-scissors)`;
+  return tiebreakerMethod === "runoff"
+    ? `Tied with ${nameStr} on flags — decided by run-off match`
+    : `Tied with ${nameStr} on flags — decided by virtual jankenpon (rock-paper-scissors)`;
 }
 
 /**

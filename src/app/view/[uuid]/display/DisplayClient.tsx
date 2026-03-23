@@ -21,7 +21,7 @@ function PoolCard({
   const pool = tournament.pools.find((p) => p.id === poolId)!;
   const rows = computeStandings(pool, tournament.players, tournament.id);
   const poolComplete = pool.matches.every((m) => m.complete);
-  const winReason = poolComplete ? computeWinReason(pool, tournament.players, tournament.id) : null;
+  const winReason = poolComplete ? computeWinReason(pool, tournament.players, tournament.id, tournament.tiebreakerMethod) : null;
 
   return (
     <div className="rounded-2xl overflow-hidden border" style={{ backgroundColor: "var(--hd-secondary-bg)", borderColor: "var(--hd-tertiary-bg)" }}>
@@ -186,14 +186,20 @@ export default function DisplayClient({
   initialTournament: Tournament;
 }) {
   const [tournament, setTournament] = useState<Tournament>(initialTournament);
+  const [pollFailures, setPollFailures] = useState(0);
 
   useEffect(() => {
     const id = setInterval(async () => {
       try {
         const res = await fetch(`/api/tournaments/${tournament.id}`, { cache: "no-store" });
-        if (res.ok) setTournament(await res.json());
+        if (res.ok) {
+          setTournament(await res.json());
+          setPollFailures(0);
+        } else {
+          setPollFailures((n) => n + 1);
+        }
       } catch {
-        // Silently ignore polling errors
+        setPollFailures((n) => n + 1);
       }
     }, POLL_INTERVAL_MS);
     return () => clearInterval(id);
@@ -234,6 +240,13 @@ export default function DisplayClient({
       {/* Elimination bracket */}
       {tournament.eliminationMatches.length > 0 && tournament.status !== "complete" && (
         <BracketDisplay tournament={tournament} />
+      )}
+
+      {/* Connection lost warning */}
+      {pollFailures >= 3 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg text-sm font-medium" style={{ backgroundColor: "#7c2d12", color: "#fef2f2" }}>
+          Connection lost — display may be outdated
+        </div>
       )}
     </main>
   );

@@ -7,6 +7,7 @@ export interface Tournament {
   date: string; // ISO date string, e.g. "2026-03-22"
   status: TournamentStatus;
   format: TournamentFormat;
+  tiebreakerMethod: "rps" | "runoff";
   players: Player[];
   pools: Pool[];
   eliminationMatches: EliminationMatch[];

@@ -11,6 +11,7 @@ export default function CreateTournament() {
   const [playerInput, setPlayerInput] = useState("");
   const [rankInput, setRankInput] = useState("");
   const [players, setPlayers] = useState<{ name: string; rank: string }[]>([]);
+  const [tiebreakerMethod, setTiebreakerMethod] = useState<"rps" | "runoff">("rps");
   const [bulkMode, setBulkMode] = useState(false);
   const [bulkInput, setBulkInput] = useState("");
   const [error, setError] = useState("");
@@ -94,7 +95,7 @@ export default function CreateTournament() {
       const res = await fetch("/api/tournaments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), date, players: players.map((p) => ({ name: p.name, rank: p.rank || undefined })) }),
+        body: JSON.stringify({ name: name.trim(), date, tiebreakerMethod, players: players.map((p) => ({ name: p.name, rank: p.rank || undefined })) }),
       });
 
       if (!res.ok) {
@@ -145,6 +146,37 @@ export default function CreateTournament() {
               onChange={(e) => setDate(e.target.value)}
               className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
             />
+          </div>
+
+          {/* Tiebreaker method */}
+          <div>
+            <label className="block text-sm font-medium mb-2" style={{ color: "var(--hd-inverse-text)" }}>
+              Tiebreaker method
+            </label>
+            <div className="space-y-2">
+              {(["rps", "runoff"] as const).map((method) => (
+                <label key={method} className="flex items-start gap-3 cursor-pointer bg-white border border-gray-200 rounded-lg px-4 py-3 hover:border-[#4242C3] transition-colors">
+                  <input
+                    type="radio"
+                    name="tiebreakerMethod"
+                    value={method}
+                    checked={tiebreakerMethod === method}
+                    onChange={() => setTiebreakerMethod(method)}
+                    className="mt-0.5 accent-[#4242C3]"
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-gray-900">
+                      {method === "rps" ? "Virtual draw (rock-paper-scissors)" : "Run-off match"}
+                    </span>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {method === "rps"
+                        ? "Ties resolved automatically — no extra match needed."
+                        : "Ties are settled with a live extra bout at the tournament."}
+                    </p>
+                  </div>
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* Players */}
