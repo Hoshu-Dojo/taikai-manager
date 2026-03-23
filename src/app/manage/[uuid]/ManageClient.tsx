@@ -727,15 +727,6 @@ export default function ManageClient({
             </div>
             <div className="flex flex-col items-end gap-1">
               <a
-                href={publicUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm hover:underline whitespace-nowrap"
-                style={{ color: "var(--hd-accent-secondary)" }}
-              >
-                View on Phone ↗
-              </a>
-              <a
                 href={displayUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -749,6 +740,15 @@ export default function ManageClient({
                   <QRCodeSVG value={origin + publicUrl} size={80} />
                 </div>
               )}
+              <a
+                href={publicUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm hover:underline whitespace-nowrap"
+                style={{ color: "var(--hd-accent-secondary)" }}
+              >
+                View on Phone ↗
+              </a>
             </div>
           </div>
 
