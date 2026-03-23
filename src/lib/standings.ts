@@ -57,9 +57,10 @@ export function resolveRps(
   return { player1Id, player2Id, player1Throw: throw1, player2Throw: throw2, winnerId };
 }
 
+// Stats from regular (non-runoff) matches only.
 function getStats(playerId: string, pool: Pool) {
   const completed = pool.matches.filter(
-    (m) => m.complete && (m.player1Id === playerId || m.player2Id === playerId)
+    (m) => !m.isRunoff && m.complete && (m.player1Id === playerId || m.player2Id === playerId)
   );
   let scored = 0;
   let conceded = 0;
@@ -83,12 +84,13 @@ function getStats(playerId: string, pool: Pool) {
 }
 
 /**
- * Head-to-head flags for playerId in matches against any player in opponentIds.
+ * Head-to-head flags for playerId in regular (non-runoff) completed matches against opponentIds.
  */
 function headToHeadFlags(playerId: string, opponentIds: string[], pool: Pool): number {
   return pool.matches
     .filter(
       (m) =>
+        !m.isRunoff &&
         m.complete &&
         ((m.player1Id === playerId && opponentIds.includes(m.player2Id!)) ||
           (m.player2Id === playerId && opponentIds.includes(m.player1Id!)))
@@ -99,10 +101,27 @@ function headToHeadFlags(playerId: string, opponentIds: string[], pool: Pool): n
 }
 
 /**
- * Sorts a tied group of playerIds using:
- * 1. Head-to-head flags among the tied group
- * 2. Flag differential across all pool matches
- * 3. Deterministic RPS
+ * Flags from run-off matches only, for playerId against opponentIds.
+ */
+function runoffFlags(playerId: string, opponentIds: string[], pool: Pool): number {
+  return pool.matches
+    .filter(
+      (m) =>
+        m.isRunoff &&
+        m.complete &&
+        ((m.player1Id === playerId && opponentIds.includes(m.player2Id!)) ||
+          (m.player2Id === playerId && opponentIds.includes(m.player1Id!)))
+    )
+    .reduce((sum, m) => {
+      return sum + (m.player1Id === playerId ? (m.flagsPlayer1 ?? 0) : (m.flagsPlayer2 ?? 0));
+    }, 0);
+}
+
+/**
+ * Sorts a tied group using:
+ * 1. Head-to-head flags (regular matches)
+ * 2. Run-off results if available (circular tie resolved by run-off)
+ * 3. Deterministic RPS as absolute last resort (run-off itself circular)
  */
 function sortTiedGroup(
   group: string[],
@@ -112,7 +131,7 @@ function sortTiedGroup(
 ): string[] {
   if (group.length === 1) return group;
 
-  // Step 1: Head-to-head flags within the group
+  // Step 1: Head-to-head flags within the group (regular matches only)
   const h2h = group.map((id) => ({
     id,
     h2hFlags: headToHeadFlags(id, group.filter((x) => x !== id), pool),
@@ -127,8 +146,27 @@ function sortTiedGroup(
     return resolveSubGroups(h2h.map((x) => x.id), (id) => h2hMap.get(id) ?? 0, statsMap, pool, tournamentId);
   }
 
-  // Step 2: Deterministic RPS — resolve pairwise for the whole group
-  return sortByRps(group, pool.id, tournamentId);
+  // Step 2: Circular tie — check for completed run-off matches
+  const runoffMatches = pool.matches.filter(
+    (m) => m.isRunoff && group.includes(m.player1Id) && group.includes(m.player2Id)
+  );
+
+  if (runoffMatches.length > 0 && runoffMatches.every((m) => m.complete)) {
+    const rfMap = new Map<string, number>(group.map((id) => [id, runoffFlags(id, group.filter((x) => x !== id), pool)]));
+    const maxRf = Math.max(...[...rfMap.values()]);
+    const minRf = Math.min(...[...rfMap.values()]);
+
+    if (maxRf === minRf) {
+      // Run-off also circular — RPS as absolute backstop
+      return sortByRps(group, pool.id, tournamentId);
+    }
+
+    const sortedByRunoff = [...group].sort((a, b) => (rfMap.get(b) ?? 0) - (rfMap.get(a) ?? 0));
+    return resolveSubGroups(sortedByRunoff, (id) => rfMap.get(id) ?? 0, statsMap, pool, tournamentId);
+  }
+
+  // Run-off not yet done — return group in original order (tie unresolved)
+  return group;
 }
 
 /**
@@ -160,7 +198,7 @@ function resolveSubGroups(
 /**
  * For a group still fully tied after all stats, use RPS.
  * For 2 players: single RPS bout.
- * For 3+ players: chain RPS — first beat second, winner vs third, etc.
+ * For 3+ players: sort by RPS score (count how many others each player beats).
  */
 function sortByRps(group: string[], poolId: string, tournamentId: string): string[] {
   if (group.length === 2) {
@@ -168,7 +206,6 @@ function sortByRps(group: string[], poolId: string, tournamentId: string): strin
     return result.winnerId === group[0] ? [group[0], group[1]] : [group[1], group[0]];
   }
 
-  // For 3+: sort by RPS score (count how many others each player beats)
   const rpsScores = new Map<string, number>(group.map((id) => [id, 0]));
   for (let i = 0; i < group.length; i++) {
     for (let j = i + 1; j < group.length; j++) {
@@ -180,13 +217,45 @@ function sortByRps(group: string[], poolId: string, tournamentId: string): strin
 }
 
 /**
+ * Detects a circular tie in the pool — a group of 3+ players with equal total flags
+ * whose head-to-head results are also equal (A beat B, B beat C, C beat A).
+ * Returns the tied player IDs, or null if no circular tie exists.
+ * Only checks when all regular (non-runoff) matches are complete.
+ */
+export function detectCircularTie(pool: Pool, tournamentId: string): string[] | null {
+  const regularMatches = pool.matches.filter((m) => !m.isRunoff);
+  if (!regularMatches.every((m) => m.complete)) return null;
+  if (pool.playerIds.length < 3) return null;
+
+  const regularPool = { ...pool, matches: regularMatches };
+  const statsMap = new Map(pool.playerIds.map((id) => [id, getStats(id, regularPool)]));
+
+  const byFlags = new Map<number, string[]>();
+  for (const [id, stats] of statsMap) {
+    const bucket = byFlags.get(stats.flags) ?? [];
+    bucket.push(id);
+    byFlags.set(stats.flags, bucket);
+  }
+
+  for (const group of byFlags.values()) {
+    if (group.length < 3) continue;
+    const h2hVals = group.map((id) =>
+      headToHeadFlags(id, group.filter((x) => x !== id), regularPool)
+    );
+    if (Math.max(...h2hVals) === Math.min(...h2hVals)) {
+      return group;
+    }
+  }
+  return null;
+}
+
+/**
  * Explain why the top-ranked player won their pool.
  */
 export function computeWinReason(
   pool: Pool,
   players: Player[],
-  tournamentId: string,
-  tiebreakerMethod?: "rps" | "runoff"
+  tournamentId: string
 ): string {
   const standings = computeStandings(pool, players, tournamentId);
   if (standings.length === 0) return "";
@@ -219,13 +288,18 @@ export function computeWinReason(
     return `Tied with ${nameStr} on flags — won head-to-head`;
   }
 
-  return tiebreakerMethod === "runoff"
-    ? `Tied with ${nameStr} on flags — decided by run-off match`
-    : `Tied with ${nameStr} on flags — decided by virtual jankenpon (rock-paper-scissors)`;
+  const runoffMatches = pool.matches.filter(
+    (m) => m.isRunoff && groupIds.includes(m.player1Id) && groupIds.includes(m.player2Id)
+  );
+  if (runoffMatches.length > 0 && runoffMatches.every((m) => m.complete)) {
+    return `Tied with ${nameStr} on flags — won the run-off`;
+  }
+  return `Tied with ${nameStr} on flags — run-off required`;
 }
 
 /**
  * Compute final ranked standings for a pool.
+ * Run-off results are used automatically when a circular tie has been resolved.
  */
 export function computeStandings(
   pool: Pool,
@@ -234,7 +308,7 @@ export function computeStandings(
 ): StandingRow[] {
   const statsMap = new Map(pool.playerIds.map((id) => [id, getStats(id, pool)]));
 
-  // Group by total flags
+  // Group by total flags (from regular matches only, via getStats)
   const byFlags = new Map<number, string[]>();
   for (const [id, stats] of statsMap) {
     const bucket = byFlags.get(stats.flags) ?? [];

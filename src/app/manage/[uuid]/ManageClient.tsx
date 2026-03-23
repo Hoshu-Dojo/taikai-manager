@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Tournament, Pool, Match, EliminationMatch } from "@/types";
-import { computeStandings, computeWinReason, StandingRow } from "@/lib/standings";
+import { computeStandings, computeWinReason, detectCircularTie, StandingRow } from "@/lib/standings";
 import { roundLabel } from "@/lib/bracket";
 import { displayName } from "@/lib/utils";
 
@@ -155,6 +155,67 @@ function rankLabel(rank: number, format: Tournament["format"]) {
   return format === "round_robin" ? "Winner" : "Advances";
 }
 
+// ─── Generate run-off button ──────────────────────────────────────────────────
+
+function GenerateRunoffButton({
+  tournament,
+  pool,
+  tiedPlayers,
+  onUpdate,
+}: {
+  tournament: Tournament;
+  pool: Pool;
+  tiedPlayers: import("@/types").Player[];
+  onUpdate: (updated: Tournament) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function generate() {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/tournaments/${tournament.id}/generate-runoff`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ poolId: pool.id }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error ?? "Something went wrong.");
+        setLoading(false);
+        return;
+      }
+      onUpdate(await res.json());
+    } catch {
+      setError("Could not reach server.");
+      setLoading(false);
+    }
+  }
+
+  const names = tiedPlayers.map((p) => displayName(p)).join(", ");
+
+  return (
+    <div className="rounded-xl px-5 py-4 space-y-3 border" style={{ backgroundColor: "rgba(190,133,94,0.12)", borderColor: "var(--hd-accent-secondary)" }}>
+      <p className="text-sm font-semibold" style={{ color: "var(--hd-accent-secondary)" }}>
+        Run-off required
+      </p>
+      <p className="text-sm" style={{ color: "var(--hd-inverse-text)" }}>
+        {names} are in a circular three-way tie — each beat one of the others by the same margin. A fresh round-robin for these players will determine who advances.
+      </p>
+      <button
+        disabled={loading}
+        onClick={generate}
+        className="w-full font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
+        style={{ backgroundColor: "var(--hd-accent-secondary)", color: "var(--hd-inverse-text)" }}
+      >
+        {loading ? "Generating…" : "Generate Run-off Matches"}
+      </button>
+      {error && <p className="text-xs text-red-500">{error}</p>}
+    </div>
+  );
+}
+
 function PoolSection({
   pool,
   tournament,
@@ -169,24 +230,47 @@ function PoolSection({
     tournament.players,
     tournament.id
   );
-  const winReason = computeWinReason(pool, tournament.players, tournament.id, tournament.tiebreakerMethod);
+  const winReason = computeWinReason(pool, tournament.players, tournament.id);
+
+  // Separate regular and run-off matches
+  const regularMatches = pool.matches.filter((m) => !m.isRunoff);
+  const runoffMatchesList = pool.matches.filter((m) => m.isRunoff);
 
   const rounds = new Map<number, Match[]>();
-  for (const match of pool.matches) {
+  for (const match of regularMatches) {
     const list = rounds.get(match.round) ?? [];
     list.push(match);
     rounds.set(match.round, list);
   }
   const roundNumbers = [...rounds.keys()].sort((a, b) => a - b);
 
+  // Run-off rounds (renumbered 1, 2, 3 … for display)
+  const runoffRounds = new Map<number, Match[]>();
+  for (const match of runoffMatchesList) {
+    const list = runoffRounds.get(match.round) ?? [];
+    list.push(match);
+    runoffRounds.set(match.round, list);
+  }
+  const runoffRoundNumbers = [...runoffRounds.keys()].sort((a, b) => a - b);
+
   const completed = pool.matches.filter((m) => m.complete).length;
   const poolComplete = completed === pool.matches.length;
+
+  // Circular tie detection for run-off prompt
+  const regularAllComplete = regularMatches.every((m) => m.complete);
+  const circularTie = regularAllComplete ? detectCircularTie(pool, tournament.id) : null;
+  const needsRunoff = circularTie !== null && runoffMatchesList.length === 0;
 
   // Sequential match numbers across all rounds in this pool
   let matchNum = 0;
   const matchNumbers = new Map<string, number>();
   for (const round of roundNumbers) {
     for (const match of rounds.get(round)!) {
+      matchNumbers.set(match.id, ++matchNum);
+    }
+  }
+  for (const round of runoffRoundNumbers) {
+    for (const match of runoffRounds.get(round)!) {
       matchNumbers.set(match.id, ++matchNum);
     }
   }
@@ -278,6 +362,63 @@ function PoolSection({
             </div>
           </div>
         ))
+      )}
+
+      {/* Run-off required notice */}
+      {needsRunoff && circularTie && (
+        <GenerateRunoffButton
+          tournament={tournament}
+          pool={pool}
+          tiedPlayers={circularTie.map((id) => tournament.players.find((p) => p.id === id)!).filter(Boolean)}
+          onUpdate={onUpdate}
+        />
+      )}
+
+      {/* Run-off rounds */}
+      {runoffMatchesList.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--hd-accent-secondary)" }}>
+            Run-off
+          </h3>
+          {runoffRoundNumbers.every((r) => runoffRounds.get(r)!.length === 1) ? (
+            <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${runoffRoundNumbers.length}, 1fr)` }}>
+              {runoffRoundNumbers.map((round, i) => (
+                <div key={round} className="space-y-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--hd-subtle-text)" }}>
+                    Round {i + 1}
+                  </h4>
+                  <MatchCard
+                    match={runoffRounds.get(round)![0]}
+                    tournamentId={tournament.id}
+                    players={tournament.players}
+                    onUpdate={onUpdate}
+                    matchNumber={matchNumbers.get(runoffRounds.get(round)![0].id)}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            runoffRoundNumbers.map((round, i) => (
+              <div key={round} className="space-y-2">
+                <h4 className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--hd-subtle-text)" }}>
+                  Round {i + 1}
+                </h4>
+                <div className={`grid gap-3 ${runoffRounds.get(round)!.length >= 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+                  {runoffRounds.get(round)!.map((match) => (
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      tournamentId={tournament.id}
+                      players={tournament.players}
+                      onUpdate={onUpdate}
+                      matchNumber={matchNumbers.get(match.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       )}
     </div>
   );
@@ -525,7 +666,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
       return `Won the final ${winnerFlags}–${loserFlags} against ${opponent ? displayName(opponent) : "?"}`;
     }
     if (tournament.format === "round_robin" && tournament.pools.length > 0) {
-      return computeWinReason(tournament.pools[0], tournament.players, tournament.id, tournament.tiebreakerMethod);
+      return computeWinReason(tournament.pools[0], tournament.players, tournament.id);
     }
     return null;
   })();
@@ -566,7 +707,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
       {/* Pool results */}
       {tournament.pools.map((pool) => {
         const standings = computeStandings(pool, tournament.players, tournament.id);
-        const winReason = computeWinReason(pool, tournament.players, tournament.id, tournament.tiebreakerMethod);
+        const winReason = computeWinReason(pool, tournament.players, tournament.id);
         return (
           <div key={pool.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100 bg-gray-50">
@@ -723,16 +864,24 @@ export default function ManageClient({
   const formatLabel =
     tournament.format === "round_robin"
       ? `${tournament.players.length} players · Single round-robin · Final ranking by total flags`
+      : tournament.format === "single_elimination"
+      ? `${tournament.players.length} players · Single elimination bracket · Seeded by entry order`
       : `${tournament.players.length} players · ${tournament.pools.length} pools · Top 1 per pool advances`;
 
   const publicUrl = `/view/${tournament.id}`;
   const displayUrl = `/view/${tournament.id}/display`;
 
-  // Show "generate bracket" button when all pools done and bracket not yet generated
+  // Show "generate bracket" button when all pools done and bracket not yet generated.
+  // With run-off method: also require that any circular tie has run-off matches generated
+  // (they'll be included in the every-match-complete check once generated).
   const allPoolsDone =
     tournament.format === "pools_elimination" &&
     tournament.status === "pool_play" &&
-    tournament.pools.every((p) => p.matches.every((m) => m.complete));
+    tournament.pools.every((p) => p.matches.every((m) => m.complete)) &&
+    !tournament.pools.some((p) => {
+      const hasRunoff = p.matches.some((m) => m.isRunoff);
+      return !hasRunoff && detectCircularTie(p, tournament.id) !== null;
+    });
 
   return (
     <main className="min-h-screen p-6 print:bg-white print:p-0" style={{ backgroundColor: "var(--hd-page-bg)" }}>

@@ -210,7 +210,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
       return `Won the final ${winnerFlags}–${loserFlags} against ${opponent ? displayName(opponent) : "?"}`;
     }
     if (tournament.format === "round_robin" && tournament.pools.length > 0) {
-      return computeWinReason(tournament.pools[0], tournament.players, tournament.id, tournament.tiebreakerMethod);
+      return computeWinReason(tournament.pools[0], tournament.players, tournament.id);
     }
     return null;
   })();
@@ -241,7 +241,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
 
       {tournament.pools.map((pool) => {
         const standings = computeStandings(pool, tournament.players, tournament.id);
-        const winReason = computeWinReason(pool, tournament.players, tournament.id, tournament.tiebreakerMethod);
+        const winReason = computeWinReason(pool, tournament.players, tournament.id);
         return (
           <div key={pool.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100 bg-gray-50">
@@ -379,7 +379,7 @@ export default function ViewClient({
           {/* Pool standings */}
           {tournament.pools.map((pool) => {
             const rows = computeStandings(pool, tournament.players, tournament.id);
-            const winReason = computeWinReason(pool, tournament.players, tournament.id, tournament.tiebreakerMethod);
+            const winReason = computeWinReason(pool, tournament.players, tournament.id);
             const poolComplete = pool.matches.every((m) => m.complete);
             return (
               <StandingsTable

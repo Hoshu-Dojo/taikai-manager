@@ -11,7 +11,7 @@ export default function CreateTournament() {
   const [playerInput, setPlayerInput] = useState("");
   const [rankInput, setRankInput] = useState("");
   const [players, setPlayers] = useState<{ name: string; rank: string }[]>([]);
-  const [tiebreakerMethod, setTiebreakerMethod] = useState<"rps" | "runoff">("rps");
+  const [formatOverride, setFormatOverride] = useState<"auto" | "single_elimination">("auto");
   const [bulkMode, setBulkMode] = useState(false);
   const [bulkInput, setBulkInput] = useState("");
   const [error, setError] = useState("");
@@ -77,6 +77,11 @@ export default function CreateTournament() {
 
   function formatLabel(count: number): string {
     if (count < 4) return "";
+    if (formatOverride === "single_elimination") {
+      const bracket = Math.pow(2, Math.ceil(Math.log2(count)));
+      const byes = bracket - count;
+      return `${count} players → single elimination bracket${byes > 0 ? ` · ${byes} bye${byes > 1 ? "s" : ""}` : ""}`;
+    }
     if (count <= 8) return `${count} players → single round-robin`;
     const pools = Math.floor(count / 3);
     return `${count} players → ${pools} pools of 3–4 · top 1 per pool advances`;
@@ -95,7 +100,12 @@ export default function CreateTournament() {
       const res = await fetch("/api/tournaments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), date, tiebreakerMethod, players: players.map((p) => ({ name: p.name, rank: p.rank || undefined })) }),
+        body: JSON.stringify({
+          name: name.trim(),
+          date,
+          formatOverride: formatOverride === "single_elimination" ? "single_elimination" : undefined,
+          players: players.map((p) => ({ name: p.name, rank: p.rank || undefined })),
+        }),
       });
 
       if (!res.ok) {
@@ -146,37 +156,6 @@ export default function CreateTournament() {
               onChange={(e) => setDate(e.target.value)}
               className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
             />
-          </div>
-
-          {/* Tiebreaker method */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: "var(--hd-inverse-text)" }}>
-              Tiebreaker method
-            </label>
-            <div className="space-y-2">
-              {(["rps", "runoff"] as const).map((method) => (
-                <label key={method} className="flex items-start gap-3 cursor-pointer bg-white border border-gray-200 rounded-lg px-4 py-3 hover:border-[#4242C3] transition-colors">
-                  <input
-                    type="radio"
-                    name="tiebreakerMethod"
-                    value={method}
-                    checked={tiebreakerMethod === method}
-                    onChange={() => setTiebreakerMethod(method)}
-                    className="mt-0.5 accent-[#4242C3]"
-                  />
-                  <div>
-                    <span className="text-sm font-medium text-gray-900">
-                      {method === "rps" ? "Virtual draw (rock-paper-scissors)" : "Run-off match"}
-                    </span>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {method === "rps"
-                        ? "Ties resolved automatically — no extra match needed."
-                        : "Ties are settled with a live extra bout at the tournament."}
-                    </p>
-                  </div>
-                </label>
-              ))}
-            </div>
           </div>
 
           {/* Players */}
@@ -273,6 +252,45 @@ export default function CreateTournament() {
               </p>
             )}
           </div>
+
+          {/* Format choice — shown once there are enough players */}
+          {players.length >= 4 && (
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{ color: "var(--hd-inverse-text)" }}>
+                Format
+              </label>
+              <div className="space-y-2">
+                {(["auto", "single_elimination"] as const).map((choice) => (
+                  <label
+                    key={choice}
+                    className={`flex items-start gap-3 cursor-pointer bg-white border rounded-lg px-4 py-3 transition-colors ${formatOverride === choice ? "border-[#4242C3]" : "border-gray-200 hover:border-gray-300"}`}
+                  >
+                    <input
+                      type="radio"
+                      name="formatOverride"
+                      value={choice}
+                      checked={formatOverride === choice}
+                      onChange={() => setFormatOverride(choice)}
+                      className="mt-0.5 accent-[#4242C3]"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-900">
+                        {choice === "auto" ? "Standard format" : "Single elimination bracket"}
+                      </span>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {choice === "auto"
+                          ? players.length <= 8
+                            ? "Everyone plays everyone once. Final ranking by total flags."
+                            : "Players compete in round-robin pools. Top finisher per pool advances to a knockout bracket."
+                          : "Straight knockout from the start. Participants are seeded by the order you enter them."}
+                      </p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
 
           {error && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">

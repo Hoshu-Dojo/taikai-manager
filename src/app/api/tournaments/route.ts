@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Tournament, Player } from "@/types";
 import { saveTournament, listTournaments } from "@/lib/storage";
 import { buildPools, determineFormat } from "@/lib/pools";
+import { generateSimpleBracket } from "@/lib/bracket";
 
 export async function GET() {
   const tournaments = await listTournaments();
@@ -11,11 +12,11 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, date, players: playerData, tiebreakerMethod } = body as {
+  const { name, date, players: playerData, formatOverride } = body as {
     name: string;
     date: string;
     players: { name: string; rank?: string }[];
-    tiebreakerMethod?: "rps" | "runoff";
+    formatOverride?: "single_elimination";
   };
 
   if (!name || !date || !playerData || playerData.length < 4) {
@@ -32,19 +33,21 @@ export async function POST(req: NextRequest) {
     poolId: null,
   }));
 
-  const format = determineFormat(players.length);
-  const pools = buildPools(players);
+  const isSingleElim = formatOverride === "single_elimination";
+
+  const format = isSingleElim ? "single_elimination" : determineFormat(players.length);
+  const pools = isSingleElim ? [] : buildPools(players);
+  const eliminationMatches = isSingleElim ? generateSimpleBracket(players) : [];
 
   const tournament: Tournament = {
     id: uuidv4(),
     name,
     date,
-    status: "pool_play",
+    status: isSingleElim ? "elimination" : "pool_play",
     format,
-    tiebreakerMethod: tiebreakerMethod === "runoff" ? "runoff" : "rps",
     players,
     pools,
-    eliminationMatches: [],
+    eliminationMatches,
     createdAt: new Date().toISOString(),
   };
 

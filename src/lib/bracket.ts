@@ -1,5 +1,4 @@
-import { v4 as uuidv4 } from "uuid";
-import { Tournament, EliminationMatch } from "@/types";
+import { Tournament, Player, EliminationMatch } from "@/types";
 import { computeStandings } from "@/lib/standings";
 import { resolveRps } from "@/lib/standings";
 
@@ -72,7 +71,6 @@ function seedPoolAdvancers(tournament: Tournament): SeedEntry[] {
 
 /**
  * Propagates the winner of a match into the player slot of the next match.
- * matchGrid is indexed as matchGrid[roundIndex][positionIndex] (both 0-based).
  */
 function propagateWinner(
   match: EliminationMatch,
@@ -92,21 +90,13 @@ function propagateWinner(
   }
 }
 
-// ─── Main export ──────────────────────────────────────────────────────────────
-
 /**
- * Generates the single-elimination bracket for a pools_elimination tournament.
- * Returns a flat array of EliminationMatch objects ready to store on the tournament.
- * Bye matches are auto-completed and the winner is propagated to the next round.
+ * Builds the match grid shells and links each match to the one it feeds into.
+ * Returns matchGrid[roundIndex][positionIndex] (both 0-based).
  */
-export function generateEliminationBracket(tournament: Tournament): EliminationMatch[] {
-  const seeds = seedPoolAdvancers(tournament);
-  const N = seeds.length;
+function buildMatchGrid(N: number): EliminationMatch[][] {
   const B = nextPowerOf2(N);
   const numRounds = Math.log2(B);
-
-  // Build match shells for every round
-  // matchGrid[r] = matches in round (r+1), sorted by position ascending
   const matchGrid: EliminationMatch[][] = [];
   let counter = 1;
 
@@ -140,7 +130,6 @@ export function generateEliminationBracket(tournament: Tournament): EliminationM
       const nextMatch = matchGrid[r + 1][Math.floor(p / 2)];
       match.advancesToMatchId = nextMatch.id;
       match.advancesToSlot = (p % 2 === 0 ? 1 : 2) as 1 | 2;
-      // Record source on the receiving match
       if (p % 2 === 0) {
         nextMatch.player1Source = `match:${match.id}:winner`;
       } else {
@@ -149,8 +138,20 @@ export function generateEliminationBracket(tournament: Tournament): EliminationM
     }
   }
 
-  // Assign players to first-round slots using the seeded bracket pattern
-  const slots = seededSlots(B); // e.g. [1,8,4,5,2,7,3,6] for B=8
+  return matchGrid;
+}
+
+/**
+ * Assigns seeds to first-round slots, auto-completing bye matches.
+ * seeds: array of { playerId, sourceLabel } in order (index 0 = seed 1).
+ */
+function assignSeeds(
+  matchGrid: EliminationMatch[][],
+  seeds: { playerId: string; sourceLabel: string }[]
+) {
+  const N = seeds.length;
+  const B = matchGrid[0].length * 2;
+  const slots = seededSlots(B);
   const firstRound = matchGrid[0];
 
   for (let mi = 0; mi < firstRound.length; mi++) {
@@ -162,16 +163,10 @@ export function generateEliminationBracket(tournament: Tournament): EliminationM
     const entry2 = seed2 <= N ? seeds[seed2 - 1] : null;
 
     match.player1Id = entry1?.playerId ?? null;
-    match.player1Source = entry1
-      ? `pool:${entry1.poolName.replace("Pool ", "")}:${entry1.poolPosition}`
-      : "bye";
-
+    match.player1Source = entry1?.sourceLabel ?? "bye";
     match.player2Id = entry2?.playerId ?? null;
-    match.player2Source = entry2
-      ? `pool:${entry2.poolName.replace("Pool ", "")}:${entry2.poolPosition}`
-      : "bye";
+    match.player2Source = entry2?.sourceLabel ?? "bye";
 
-    // Auto-complete bye matches and propagate the real player forward
     if (!entry1 && entry2) {
       match.winnerId = entry2.playerId;
       propagateWinner(match, matchGrid);
@@ -180,7 +175,40 @@ export function generateEliminationBracket(tournament: Tournament): EliminationM
       propagateWinner(match, matchGrid);
     }
   }
+}
 
+// ─── Main exports ──────────────────────────────────────────────────────────────
+
+/**
+ * Generates the single-elimination bracket for a pools_elimination tournament.
+ * Seeds players by pool standings; cross-seeds to avoid pool rematches early.
+ */
+export function generateEliminationBracket(tournament: Tournament): EliminationMatch[] {
+  const poolSeeds = seedPoolAdvancers(tournament);
+  const matchGrid = buildMatchGrid(poolSeeds.length);
+  assignSeeds(
+    matchGrid,
+    poolSeeds.map((e) => ({
+      playerId: e.playerId,
+      sourceLabel: `pool:${e.poolName.replace("Pool ", "")}:${e.poolPosition}`,
+    }))
+  );
+  return matchGrid.flat();
+}
+
+/**
+ * Generates a single-elimination bracket from a pre-ordered player list.
+ * Players are already in seed order: index 0 = seed 1, index 1 = seed 2, etc.
+ */
+export function generateSimpleBracket(players: Player[]): EliminationMatch[] {
+  const matchGrid = buildMatchGrid(players.length);
+  assignSeeds(
+    matchGrid,
+    players.map((p, i) => ({
+      playerId: p.id,
+      sourceLabel: `seed:${i + 1}`,
+    }))
+  );
   return matchGrid.flat();
 }
 
@@ -193,3 +221,4 @@ export function roundLabel(round: number, totalRounds: number): string {
   if (fromEnd === 2) return "Quarterfinal";
   return `Round ${round}`;
 }
+

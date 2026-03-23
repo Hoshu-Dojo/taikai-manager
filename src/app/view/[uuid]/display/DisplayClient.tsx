@@ -21,7 +21,7 @@ function PoolCard({
   const pool = tournament.pools.find((p) => p.id === poolId)!;
   const rows = computeStandings(pool, tournament.players, tournament.id);
   const poolComplete = pool.matches.every((m) => m.complete);
-  const winReason = poolComplete ? computeWinReason(pool, tournament.players, tournament.id, tournament.tiebreakerMethod) : null;
+  const winReason = poolComplete ? computeWinReason(pool, tournament.players, tournament.id) : null;
 
   return (
     <div className="rounded-2xl overflow-hidden border" style={{ backgroundColor: "var(--hd-secondary-bg)", borderColor: "var(--hd-tertiary-bg)" }}>

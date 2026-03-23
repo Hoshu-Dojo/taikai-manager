@@ -1,4 +1,4 @@
-export type TournamentFormat = "round_robin" | "pools_elimination";
+export type TournamentFormat = "round_robin" | "pools_elimination" | "single_elimination";
 export type TournamentStatus = "setup" | "pool_play" | "elimination" | "complete";
 
 export interface Tournament {
@@ -7,7 +7,7 @@ export interface Tournament {
   date: string; // ISO date string, e.g. "2026-03-22"
   status: TournamentStatus;
   format: TournamentFormat;
-  tiebreakerMethod: "rps" | "runoff";
+  tiebreakerMethod?: "rps" | "runoff";
   players: Player[];
   pools: Pool[];
   eliminationMatches: EliminationMatch[];
@@ -37,6 +37,7 @@ export interface Match {
   flagsPlayer1: number | null;
   flagsPlayer2: number | null;
   complete: boolean;
+  isRunoff?: boolean; // true for run-off tiebreaker matches
 }
 
 export interface EliminationMatch {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loadTournament, saveTournament } from "@/lib/storage";
 import { generateEliminationBracket } from "@/lib/bracket";
+import { detectCircularTie } from "@/lib/standings";
 
 export async function POST(
   _req: NextRequest,
@@ -33,6 +34,18 @@ export async function POST(
   if (incomplete) {
     return NextResponse.json(
       { error: "All pool matches must be complete before generating the bracket." },
+      { status: 400 }
+    );
+  }
+
+  // Verify no pool has an unresolved circular tie (run-off not yet generated)
+  const needsRunoff = tournament.pools.some((pool) => {
+    const hasRunoff = pool.matches.some((m) => m.isRunoff);
+    return !hasRunoff && detectCircularTie(pool, tournament.id) !== null;
+  });
+  if (needsRunoff) {
+    return NextResponse.json(
+      { error: "A run-off is required before generating the bracket. Generate and complete the run-off first." },
       { status: 400 }
     );
   }
