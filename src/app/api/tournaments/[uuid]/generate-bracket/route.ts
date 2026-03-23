@@ -6,7 +6,7 @@ import { isValidUUID } from "@/lib/utils";
 import { checkPasscodeHeader, sanitizeTournament } from "@/lib/auth";
 
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ uuid: string }> }
 ) {
   const { uuid } = await params;
