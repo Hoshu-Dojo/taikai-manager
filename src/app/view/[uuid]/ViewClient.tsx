@@ -27,12 +27,14 @@ function StandingsTable({
   poolName,
   topLabel,
   winTooltip,
+  winReason,
   poolComplete,
 }: {
   rows: StandingRow[];
   poolName: string;
   topLabel: string;
   winTooltip: string;
+  winReason: string;
   poolComplete: boolean;
 }) {
   return (
@@ -74,6 +76,11 @@ function StandingsTable({
           ))}
         </tbody>
       </table>
+      {poolComplete && rows.length > 0 && (
+        <p className="px-5 py-2 text-xs text-gray-600 border-t border-gray-100">
+          {rows[0].playerName} advances — {winReason}
+        </p>
+      )}
     </div>
   );
 }
@@ -377,6 +384,7 @@ export default function ViewClient({
                 poolName={pool.name}
                 topLabel={topLabel}
                 winTooltip={`${topLabel}: ${winReason}`}
+                winReason={winReason}
                 poolComplete={poolComplete}
               />
             );
