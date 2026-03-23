@@ -9,7 +9,10 @@
       "Bash(node scripts/e2e-rr-test.mjs)",
       "Bash(node scripts/e2e-large-test.mjs)",
       "WebFetch(domain:www.hoshudojo.com)",
-      "Read(//c/Users/thoma/**)"
+      "Read(//c/Users/thoma/**)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
