@@ -731,7 +731,7 @@ export default function ManageClient({
                 className="text-sm hover:underline whitespace-nowrap"
                 style={{ color: "var(--hd-accent-secondary)" }}
               >
-                Public view ↗
+                View on Phone ↗
               </a>
               <a
                 href={displayUrl}
@@ -740,7 +740,7 @@ export default function ManageClient({
                 className="text-sm hover:underline whitespace-nowrap"
                 style={{ color: "var(--hd-accent-secondary)" }}
               >
-                Display mode ↗
+                Large Display Mode ↗
               </a>
             </div>
           </div>
