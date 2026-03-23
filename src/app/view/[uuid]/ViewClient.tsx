@@ -168,7 +168,7 @@ function BracketSection({ tournament }: { tournament: Tournament }) {
 
         {/* Connector lines */}
         {connectors.map((d, i) => (
-          <path key={i} d={d} stroke="rgba(255,255,255,0.45)" strokeWidth={1.5} fill="none" />
+          <path key={i} d={d} stroke="rgba(239,232,210,0.75)" strokeWidth={2.5} fill="none" />
         ))}
 
         {/* Match boxes */}
@@ -397,6 +397,7 @@ export default function ViewClient({
   const [tournament, setTournament] = useState<Tournament>(initialTournament);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [pollFailures, setPollFailures] = useState(0);
+  const [showPools, setShowPools] = useState(initialTournament.eliminationMatches.length === 0);
 
   useEffect(() => {
     const id = setInterval(async () => {
@@ -436,22 +437,37 @@ export default function ViewClient({
           </div>
 
           {/* Pool standings */}
-          {tournament.pools.map((pool) => {
-            const rows = computeStandings(pool, tournament.players, tournament.id);
-            const winReason = computeWinReason(pool, tournament.players, tournament.id);
-            const poolComplete = pool.matches.every((m) => m.complete);
-            return (
-              <StandingsTable
-                key={pool.id}
-                rows={rows}
-                poolName={pool.name}
-                topLabel={topLabel}
-                winTooltip={`${topLabel}: ${winReason}`}
-                winReason={winReason}
-                poolComplete={poolComplete}
-              />
-            );
-          })}
+          {tournament.pools.length > 0 && (
+            <div className="space-y-4">
+              <button
+                onClick={() => setShowPools((v) => !v)}
+                className="flex items-center justify-between w-full text-left"
+              >
+                <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--hd-subtle-text)" }}>
+                  Pool Play
+                </span>
+                <span className="text-xs" style={{ color: "var(--hd-subtle-text)" }}>
+                  {showPools ? "Hide ▲" : "Show ▼"}
+                </span>
+              </button>
+              {showPools && tournament.pools.map((pool) => {
+                const rows = computeStandings(pool, tournament.players, tournament.id);
+                const winReason = computeWinReason(pool, tournament.players, tournament.id);
+                const poolComplete = pool.matches.every((m) => m.complete);
+                return (
+                  <StandingsTable
+                    key={pool.id}
+                    rows={rows}
+                    poolName={pool.name}
+                    topLabel={topLabel}
+                    winTooltip={`${topLabel}: ${winReason}`}
+                    winReason={winReason}
+                    poolComplete={poolComplete}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Elimination bracket — full width so it fills the screen */}
