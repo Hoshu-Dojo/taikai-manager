@@ -704,6 +704,7 @@ export default function ManageClient({
       : `${tournament.players.length} players · ${tournament.pools.length} pools + single-elimination bracket · Top ${advancers} per pool advance${advancers === 1 ? "s" : ""}`;
 
   const publicUrl = `/view/${tournament.id}`;
+  const displayUrl = `/view/${tournament.id}/display`;
 
   // Show "generate bracket" button when all pools done and bracket not yet generated
   const allPoolsDone =
@@ -722,15 +723,26 @@ export default function ManageClient({
               <h1 className="text-2xl font-serif font-semibold" style={{ color: "var(--hd-inverse-text)" }}>{tournament.name}</h1>
               <p className="text-sm" style={{ color: "var(--hd-subtle-text)" }}>{tournament.date}</p>
             </div>
-            <a
-              href={publicUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm hover:underline whitespace-nowrap"
-              style={{ color: "var(--hd-accent-secondary)" }}
-            >
-              Public view ↗
-            </a>
+            <div className="flex flex-col items-end gap-1">
+              <a
+                href={publicUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm hover:underline whitespace-nowrap"
+                style={{ color: "var(--hd-accent-secondary)" }}
+              >
+                Public view ↗
+              </a>
+              <a
+                href={displayUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm hover:underline whitespace-nowrap"
+                style={{ color: "var(--hd-accent-secondary)" }}
+              >
+                Display mode ↗
+              </a>
+            </div>
           </div>
 
           {/* Format info */}
