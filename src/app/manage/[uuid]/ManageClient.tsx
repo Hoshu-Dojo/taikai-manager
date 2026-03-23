@@ -90,13 +90,13 @@ function MatchCard({
   const showOptions = !match.complete || editing;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-3 space-y-2">
+    <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div>
           {matchNumber && (
             <span className="block text-xs text-gray-500 mb-0.5">#{matchNumber}</span>
           )}
-          <span className="text-gray-800 font-medium text-sm">
+          <span className="text-gray-800 font-medium text-base">
             {displayName(p1)} <span className="text-gray-600 font-normal">vs</span> {displayName(p2)}
           </span>
         </div>
@@ -126,7 +126,7 @@ function MatchCard({
               key={opt.label}
               disabled={submitting}
               onClick={() => submitScore(opt)}
-              className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 text-gray-800 text-xs font-medium transition-colors disabled:opacity-50 hover:border-[#4242C3] hover:bg-[#4242C3]/10"
+              className="w-full text-left px-4 py-4 rounded-xl border border-gray-200 text-gray-800 text-base font-medium transition-colors disabled:opacity-50 hover:border-[#4242C3] hover:bg-[#4242C3]/10 active:bg-[#4242C3]/20"
             >
               {opt.label}
             </button>
@@ -135,7 +135,7 @@ function MatchCard({
             <button
               disabled={submitting}
               onClick={() => { setEditing(false); setError(""); }}
-              className="w-full text-xs text-gray-400 hover:text-gray-600 py-1"
+              className="w-full text-sm text-gray-400 hover:text-gray-600 py-2"
             >
               Cancel
             </button>
@@ -340,13 +340,13 @@ function EliminationMatchCard({
   const showOptions = !readOnly && !isBye && p1 && p2 && (!isScored || editing);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-3 space-y-2">
+    <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div>
           {matchNumber && (
             <span className="block text-xs text-gray-500 mb-0.5">#{matchNumber}</span>
           )}
-          <span className="text-gray-800 font-medium text-sm">
+          <span className="text-gray-800 font-medium text-base">
             <span className={match.winnerId === match.player1Id && isScored ? "font-bold" : ""}>
               {p1Display}
             </span>
@@ -392,7 +392,7 @@ function EliminationMatchCard({
               key={opt.label}
               disabled={submitting}
               onClick={() => submitScore(opt)}
-              className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 text-gray-800 text-xs font-medium transition-colors disabled:opacity-50 hover:border-[#4242C3] hover:bg-[#4242C3]/10"
+              className="w-full text-left px-4 py-4 rounded-xl border border-gray-200 text-gray-800 text-base font-medium transition-colors disabled:opacity-50 hover:border-[#4242C3] hover:bg-[#4242C3]/10 active:bg-[#4242C3]/20"
             >
               {opt.label}
             </button>
@@ -401,7 +401,7 @@ function EliminationMatchCard({
             <button
               disabled={submitting}
               onClick={() => { setEditing(false); setError(""); }}
-              className="w-full text-xs text-gray-400 hover:text-gray-600 py-1"
+              className="w-full text-sm text-gray-400 hover:text-gray-600 py-2"
             >
               Cancel
             </button>
