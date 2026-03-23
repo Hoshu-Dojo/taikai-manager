@@ -8,7 +8,7 @@ export async function PATCH(
   { params }: { params: Promise<{ uuid: string; matchId: string }> }
 ) {
   const { uuid, matchId } = await params;
-  if (!isValidUUID(uuid) || !isValidUUID(matchId)) {
+  if (!isValidUUID(uuid)) {
     return NextResponse.json({ error: "Invalid ID." }, { status: 400 });
   }
   const tournament = await loadTournament(uuid);
