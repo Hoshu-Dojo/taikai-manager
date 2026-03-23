@@ -12,7 +12,9 @@
       "Read(//c/Users/thoma/**)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "mcp__perplexity__perplexity_research",
+      "Bash(npm install:*)"
     ]
   }
 }

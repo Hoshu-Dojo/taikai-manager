@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { Tournament, Pool, Match, EliminationMatch } from "@/types";
 import { computeStandings, computeWinReason, StandingRow } from "@/lib/standings";
 import { roundLabel } from "@/lib/bracket";
@@ -692,16 +693,17 @@ export default function ManageClient({
   initialTournament: Tournament;
 }) {
   const [tournament, setTournament] = useState<Tournament>(initialTournament);
+  const [origin, setOrigin] = useState("");
+  useEffect(() => { setOrigin(window.location.origin); }, []);
 
   const handleUpdate = useCallback((updated: Tournament) => {
     setTournament(updated);
   }, []);
 
-  const advancers = tournament.advancersPerPool ?? 1;
   const formatLabel =
     tournament.format === "round_robin"
       ? `${tournament.players.length} players · Single round-robin · Final ranking by total flags`
-      : `${tournament.players.length} players · ${tournament.pools.length} pools + single-elimination bracket · Top ${advancers} per pool advance${advancers === 1 ? "s" : ""}`;
+      : `${tournament.players.length} players · ${tournament.pools.length} pools · Top 1 per pool advances`;
 
   const publicUrl = `/view/${tournament.id}`;
   const displayUrl = `/view/${tournament.id}/display`;
@@ -742,6 +744,11 @@ export default function ManageClient({
               >
                 Large Display Mode ↗
               </a>
+              {origin && (
+                <div className="mt-1 p-1.5 bg-white rounded-lg border border-gray-200">
+                  <QRCodeSVG value={origin + publicUrl} size={80} />
+                </div>
+              )}
             </div>
           </div>
 

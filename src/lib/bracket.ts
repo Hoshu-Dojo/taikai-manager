@@ -41,7 +41,7 @@ interface SeedEntry {
  * flags desc → flag differential desc → deterministic RPS
  */
 function seedPoolAdvancers(tournament: Tournament): SeedEntry[] {
-  const n = tournament.advancersPerPool ?? 1;
+  const n = 1;
   const entries: SeedEntry[] = [];
 
   for (const pool of tournament.pools) {
