@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { loadTournament, saveTournament } from "@/lib/storage";
 import { generateEliminationBracket } from "@/lib/bracket";
 import { detectCircularTie } from "@/lib/standings";
+import { isValidUUID } from "@/lib/utils";
 
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ uuid: string }> }
 ) {
   const { uuid } = await params;
+  if (!isValidUUID(uuid)) {
+    return NextResponse.json({ error: "Invalid tournament ID." }, { status: 400 });
+  }
   const tournament = await loadTournament(uuid);
   if (!tournament) {
     return NextResponse.json({ error: "Tournament not found." }, { status: 404 });

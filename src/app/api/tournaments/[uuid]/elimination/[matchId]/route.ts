@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loadTournament, saveTournament } from "@/lib/storage";
+import { isValidUUID } from "@/lib/utils";
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ uuid: string; matchId: string }> }
 ) {
   const { uuid, matchId } = await params;
+  if (!isValidUUID(uuid) || !isValidUUID(matchId)) {
+    return NextResponse.json({ error: "Invalid ID." }, { status: 400 });
+  }
   const tournament = await loadTournament(uuid);
   if (!tournament) {
     return NextResponse.json({ error: "Tournament not found." }, { status: 404 });

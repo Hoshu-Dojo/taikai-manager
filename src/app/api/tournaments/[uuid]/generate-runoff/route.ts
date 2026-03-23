@@ -2,13 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { loadTournament, saveTournament } from "@/lib/storage";
 import { detectCircularTie } from "@/lib/standings";
 import { generatePoolSchedule } from "@/lib/pools";
+import { isValidUUID } from "@/lib/utils";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ uuid: string }> }
 ) {
   const { uuid } = await params;
-  const { poolId } = await req.json() as { poolId: string };
+  if (!isValidUUID(uuid)) {
+    return NextResponse.json({ error: "Invalid tournament ID." }, { status: 400 });
+  }
+
+  const body = await req.json();
+  const { poolId } = body as { poolId: string };
+  if (typeof poolId !== "string" || !isValidUUID(poolId)) {
+    return NextResponse.json({ error: "Invalid pool ID." }, { status: 400 });
+  }
 
   const tournament = await loadTournament(uuid);
   if (!tournament) {
