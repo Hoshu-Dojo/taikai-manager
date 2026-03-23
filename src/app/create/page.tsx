@@ -329,28 +329,6 @@ export default function CreateTournament() {
             </div>
           )}
 
-          {/* Tiebreaker method — not applicable for single elimination */}
-          {!isSingleElim && (
-            <div className="flex items-center gap-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="accent-[#4242C3]"
-                />
-                <span className="text-sm" style={{ color: "var(--hd-inverse-text)" }}>
-                  Resolve 3-way ties with a run-off
-                </span>
-              </label>
-              <span
-                title="Rare: if three players finish with equal flags and each one has beaten one of the others (A beat B, B beat C, C beat A), head-to-head cannot break the tie. By default, a virtual rock-paper-scissors draw picks the winner instantly. Check this box to instead generate a run-off — the tied players replay a full round-robin among themselves to determine who advances."
-                className="text-xs cursor-help select-none"
-                style={{ color: "var(--hd-subtle-text)" }}
-              >
-                ⓘ
-              </span>
-            </div>
-          )}
-
           {error && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
               {error}
