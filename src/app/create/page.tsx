@@ -13,6 +13,7 @@ export default function CreateTournament() {
   const [players, setPlayers] = useState<{ name: string; rank: string }[]>([]);
   const [bulkMode, setBulkMode] = useState(false);
   const [bulkInput, setBulkInput] = useState("");
+  const [advancersPerPool, setAdvancersPerPool] = useState(1);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -74,11 +75,12 @@ export default function CreateTournament() {
     }
   }
 
-  function formatLabel(count: number): string {
+  function formatLabel(count: number, advancers: number): string {
     if (count < 4) return "";
     if (count <= 8) return `${count} players → single round-robin`;
     const pools = count <= 10 ? 2 : count <= 15 ? 3 : count <= 20 ? 4 : count <= 25 ? 5 : 6;
-    return `${count} players → ${pools} pools + elimination bracket`;
+    const adv = advancers === 1 ? "top 1 per pool advances" : `top ${advancers} per pool advance`;
+    return `${count} players → ${pools} pools + elimination bracket · ${adv}`;
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -94,7 +96,7 @@ export default function CreateTournament() {
       const res = await fetch("/api/tournaments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), date, players: players.map((p) => ({ name: p.name, rank: p.rank || undefined })) }),
+        body: JSON.stringify({ name: name.trim(), date, players: players.map((p) => ({ name: p.name, rank: p.rank || undefined })), advancersPerPool }),
       });
 
       if (!res.ok) {
@@ -237,8 +239,33 @@ export default function CreateTournament() {
 
             {players.length >= 4 && (
               <p className="mt-2 text-sm font-medium" style={{ color: "var(--hd-accent-secondary)" }}>
-                {formatLabel(players.length)}
+                {formatLabel(players.length, advancersPerPool)}
               </p>
+            )}
+
+            {players.length >= 9 && (
+              <div className="mt-3 space-y-1">
+                <p className="text-sm font-medium" style={{ color: "var(--hd-inverse-text)" }}>
+                  Players advancing per pool
+                </p>
+                <div className="flex gap-2">
+                  {[1, 2, 3].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setAdvancersPerPool(n)}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold border transition-colors"
+                      style={
+                        advancersPerPool === n
+                          ? { backgroundColor: "var(--hd-accent)", color: "var(--hd-inverse-text)", borderColor: "var(--hd-accent)" }
+                          : { backgroundColor: "white", color: "#374151", borderColor: "#D1D5DB" }
+                      }
+                    >
+                      Top {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 

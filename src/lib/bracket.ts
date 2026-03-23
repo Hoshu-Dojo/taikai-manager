@@ -33,26 +33,30 @@ interface SeedEntry {
   poolName: string;
   flags: number;
   flagDifferential: number;
+  poolPosition: number; // 1-based finish position within the pool
 }
 
 /**
- * Extracts pool winners and sorts them by global seed rank:
+ * Extracts the top N finishers from each pool and sorts them by global seed rank:
  * flags desc → flag differential desc → deterministic RPS
  */
-function seedPoolWinners(tournament: Tournament): SeedEntry[] {
+function seedPoolAdvancers(tournament: Tournament): SeedEntry[] {
+  const n = tournament.advancersPerPool ?? 1;
   const entries: SeedEntry[] = [];
 
   for (const pool of tournament.pools) {
     const standings = computeStandings(pool, tournament.players, tournament.id);
-    if (standings.length === 0) continue;
-    const winner = standings[0];
-    entries.push({
-      playerId: winner.playerId,
-      poolId: pool.id,
-      poolName: pool.name,
-      flags: winner.flags,
-      flagDifferential: winner.flagDifferential,
-    });
+    for (let i = 0; i < Math.min(n, standings.length); i++) {
+      const row = standings[i];
+      entries.push({
+        playerId: row.playerId,
+        poolId: pool.id,
+        poolName: pool.name,
+        flags: row.flags,
+        flagDifferential: row.flagDifferential,
+        poolPosition: i + 1,
+      });
+    }
   }
 
   // Sort best-to-worst; use "seeding" as the RPS context for cross-pool ties
@@ -96,7 +100,7 @@ function propagateWinner(
  * Bye matches are auto-completed and the winner is propagated to the next round.
  */
 export function generateEliminationBracket(tournament: Tournament): EliminationMatch[] {
-  const seeds = seedPoolWinners(tournament);
+  const seeds = seedPoolAdvancers(tournament);
   const N = seeds.length;
   const B = nextPowerOf2(N);
   const numRounds = Math.log2(B);
@@ -159,12 +163,12 @@ export function generateEliminationBracket(tournament: Tournament): EliminationM
 
     match.player1Id = entry1?.playerId ?? null;
     match.player1Source = entry1
-      ? `pool:${entry1.poolName.replace("Pool ", "")}:1`
+      ? `pool:${entry1.poolName.replace("Pool ", "")}:${entry1.poolPosition}`
       : "bye";
 
     match.player2Id = entry2?.playerId ?? null;
     match.player2Source = entry2
-      ? `pool:${entry2.poolName.replace("Pool ", "")}:1`
+      ? `pool:${entry2.poolName.replace("Pool ", "")}:${entry2.poolPosition}`
       : "bye";
 
     // Auto-complete bye matches and propagate the real player forward

@@ -697,10 +697,11 @@ export default function ManageClient({
     setTournament(updated);
   }, []);
 
+  const advancers = tournament.advancersPerPool ?? 1;
   const formatLabel =
     tournament.format === "round_robin"
       ? `${tournament.players.length} players · Single round-robin · Final ranking by total flags`
-      : `${tournament.players.length} players · ${tournament.pools.length} pools + single-elimination bracket`;
+      : `${tournament.players.length} players · ${tournament.pools.length} pools + single-elimination bracket · Top ${advancers} per pool advance${advancers === 1 ? "s" : ""}`;
 
   const publicUrl = `/view/${tournament.id}`;
 

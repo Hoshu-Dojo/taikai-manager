@@ -11,11 +11,13 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, date, players: playerData } = body as {
+  const { name, date, players: playerData, advancersPerPool: advancersRaw } = body as {
     name: string;
     date: string;
     players: { name: string; rank?: string }[];
+    advancersPerPool?: number;
   };
+  const advancersPerPool = Math.min(3, Math.max(1, Math.round(advancersRaw ?? 1)));
 
   if (!name || !date || !playerData || playerData.length < 4) {
     return NextResponse.json(
@@ -40,6 +42,7 @@ export async function POST(req: NextRequest) {
     date,
     status: "pool_play",
     format,
+    advancersPerPool: format === "pools_elimination" ? advancersPerPool : 1,
     players,
     pools,
     eliminationMatches: [],
