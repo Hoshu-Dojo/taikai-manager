@@ -901,6 +901,10 @@ export default function ManageClient({
     }
   }
 
+  const handleUpdate = useCallback((updated: Tournament) => {
+    setTournament(updated);
+  }, []);
+
   if (gated) {
     return (
       <main className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: "var(--hd-page-bg)" }}>
@@ -940,10 +944,6 @@ export default function ManageClient({
       </main>
     );
   }
-
-  const handleUpdate = useCallback((updated: Tournament) => {
-    setTournament(updated);
-  }, []);
 
   const formatLabel =
     tournament.format === "round_robin"
