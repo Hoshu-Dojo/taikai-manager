@@ -519,7 +519,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
         <h2 className="text-xl font-sans font-bold" style={{ color: "var(--hd-inverse-text)" }}>Final Report</h2>
         <button
           onClick={() => window.print()}
-          className="text-sm hover:underline" style={{ color: "var(--hd-accent)" }}
+          className="text-sm hover:underline" style={{ color: "var(--hd-accent-secondary)" }}
         >
           Print ↗
         </button>
@@ -757,7 +757,7 @@ export default function ManageClient({
 
           {/* Elimination bracket */}
           {tournament.eliminationMatches.length > 0 && (
-            <div className="pt-4 border-t" style={{ borderColor: "var(--hd-tertiary-bg)" }}>
+            <div className="pt-4 border-t" style={{ borderColor: "var(--hd-accent-secondary)" }}>
               <BracketSection
                 tournament={tournament}
                 onUpdate={handleUpdate}
@@ -768,7 +768,7 @@ export default function ManageClient({
 
         {/* Final report — visible on screen and when printing */}
         {tournament.status === "complete" && (
-          <div className="pt-4 border-t print:border-0" style={{ borderColor: "var(--hd-tertiary-bg)" }}>
+          <div className="pt-4 border-t print:border-0" style={{ borderColor: "var(--hd-accent-secondary)" }}>
             <FinalReport tournament={tournament} />
           </div>
         )}
