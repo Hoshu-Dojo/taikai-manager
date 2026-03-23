@@ -16,7 +16,9 @@
       "mcp__perplexity__perplexity_research",
       "Bash(npm install:*)",
       "Bash(grep:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(gh repo:*)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }
