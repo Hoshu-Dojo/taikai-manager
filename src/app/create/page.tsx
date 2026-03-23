@@ -89,7 +89,7 @@ export default function CreateTournament() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Spring Taikai 2026"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
             />
           </div>
 
@@ -102,7 +102,7 @@ export default function CreateTournament() {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
             />
           </div>
 
@@ -118,7 +118,7 @@ export default function CreateTournament() {
                 onChange={(e) => setPlayerInput(e.target.value)}
                 onKeyDown={handlePlayerKeyDown}
                 placeholder="Enter a name and press Add or Enter"
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
               />
               <button
                 type="button"
