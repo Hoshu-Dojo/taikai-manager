@@ -29,6 +29,13 @@ export default function Home() {
         >
           New Tournament
         </Link>
+        <Link
+          href="/help"
+          className="block text-sm hover:underline"
+          style={{ color: "var(--hd-primary-text)", opacity: 0.5 }}
+        >
+          How it works
+        </Link>
       </div>
     </main>
   );

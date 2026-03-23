@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export function Header() {
   return (
@@ -16,7 +17,7 @@ export function Header() {
         height={36}
         style={{ filter: "brightness(0) invert(1)" }}
       />
-      <div>
+      <div className="flex-1">
         <div
           className="font-sans font-bold text-sm tracking-widest uppercase leading-tight"
           style={{ color: "var(--hd-inverse-text)" }}
@@ -30,6 +31,13 @@ export function Header() {
           Taikai
         </div>
       </div>
+      <Link
+        href="/help"
+        className="text-xs font-medium hover:underline"
+        style={{ color: "var(--hd-subtle-text)" }}
+      >
+        Help
+      </Link>
     </header>
   );
 }
