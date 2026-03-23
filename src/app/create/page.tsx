@@ -74,14 +74,14 @@ export default function CreateTournament() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
+    <main className="min-h-screen p-6" style={{ backgroundColor: "var(--hd-page-bg)" }}>
       <div className="max-w-lg mx-auto space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">New Tournament</h1>
+        <h1 className="text-2xl font-serif font-semibold" style={{ color: "var(--hd-inverse-text)" }}>New Tournament</h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: "var(--hd-inverse-text)" }}>
               Tournament name
             </label>
             <input
@@ -95,7 +95,7 @@ export default function CreateTournament() {
 
           {/* Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: "var(--hd-inverse-text)" }}>
               Date
             </label>
             <input
@@ -108,7 +108,7 @@ export default function CreateTournament() {
 
           {/* Players */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: "var(--hd-inverse-text)" }}>
               Participants
             </label>
             <div className="flex gap-2">
