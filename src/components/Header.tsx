@@ -24,7 +24,7 @@ export function Header() {
           Hoshu Dojo
         </div>
         <div
-          className="font-sans text-xs tracking-widest uppercase"
+          className="font-sans font-medium text-xs tracking-widest uppercase"
           style={{ color: "var(--hd-subtle-text)" }}
         >
           Taikai

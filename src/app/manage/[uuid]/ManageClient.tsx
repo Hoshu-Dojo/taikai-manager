@@ -180,7 +180,7 @@ function PoolSection({
 
   return (
     <div className="space-y-5">
-      <h2 className="text-xl font-bold text-gray-800">{pool.name}</h2>
+      <h2 className="text-xl font-sans font-bold" style={{ color: "var(--hd-inverse-text)" }}>{pool.name}</h2>
 
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         <div className="px-5 py-3 border-b border-gray-100 bg-gray-50">
@@ -190,7 +190,7 @@ function PoolSection({
         </div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-gray-400 text-xs border-b border-gray-100">
+            <tr className="text-left text-gray-500 text-xs border-b border-gray-100">
               <th className="px-5 py-2">#</th>
               <th className="px-5 py-2">Player</th>
               <th className="px-5 py-2 text-right">Flags</th>
@@ -201,7 +201,7 @@ function PoolSection({
               const label = rankLabel(i, tournament.format);
               return (
                 <tr key={row.playerId} className="border-b border-gray-50 last:border-0">
-                  <td className="px-5 py-3 text-gray-400">{i + 1}</td>
+                  <td className="px-5 py-3 text-gray-600">{i + 1}</td>
                   <td className="px-5 py-3 font-medium text-gray-800">
                     <span className="flex items-center gap-2">
                       {row.playerName}
@@ -537,7 +537,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
             </div>
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-400 text-xs border-b border-gray-100">
+                <tr className="text-left text-gray-500 text-xs border-b border-gray-100">
                   <th className="px-5 py-2">#</th>
                   <th className="px-5 py-2">Player</th>
                   <th className="px-5 py-2 text-right">Flags</th>
@@ -546,7 +546,7 @@ function FinalReport({ tournament }: { tournament: Tournament }) {
               <tbody>
                 {standings.map((row, i) => (
                   <tr key={row.playerId} className="border-b border-gray-50 last:border-0">
-                    <td className="px-5 py-3 text-gray-400">{i + 1}</td>
+                    <td className="px-5 py-3 text-gray-600">{i + 1}</td>
                     <td className="px-5 py-3 font-medium text-gray-800">{row.playerName}</td>
                     <td className="px-5 py-3 text-right text-gray-700">{row.flags}</td>
                   </tr>
@@ -708,7 +708,7 @@ export default function ManageClient({
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm hover:underline whitespace-nowrap"
-              style={{ color: "var(--hd-accent)" }}
+              style={{ color: "var(--hd-accent-secondary)" }}
             >
               Public view ↗
             </a>
