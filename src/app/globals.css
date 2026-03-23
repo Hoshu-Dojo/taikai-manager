@@ -1,1 +1,21 @@
 @import "tailwindcss";
+
+@import url("https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap");
+
+@theme {
+  --font-sans: Inter, Arial, Helvetica, sans-serif;
+  --font-serif: Cormorant, Georgia, "Times New Roman", serif;
+}
+
+:root {
+  --hd-page-bg: #060614;
+  --hd-secondary-bg: #0A0A2B;
+  --hd-tertiary-bg: #22226B;
+  --hd-primary-bg: #EFE8D2;
+  --hd-primary-text: #0A0A2B;
+  --hd-inverse-text: #EFE8D2;
+  --hd-subtle-text: #989898;
+  --hd-accent: #4242C3;
+  --hd-accent-secondary: #BE855E;
+  --hd-borders: #CAC9CD;
+}
