@@ -205,6 +205,7 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Tiebreaker method choice at creation time: RPS (default) or run-off match
 - QR code on organizer screen linking to public display URL
 - Improved error messages and recovery flows
+- **User documentation page** accessible from `taikai.hoshudojo.com` — explains the flag system, tiebreaker logic, tournament formats, organizer vs. public URLs, and how to run a tournament end-to-end
 
 **Phase 6 — Multilingual** · ⬜ Future · — Not tested
 
