@@ -93,7 +93,7 @@ function MatchCard({
       <div className="flex items-start justify-between gap-2">
         <div>
           {matchNumber && (
-            <span className="block text-xs text-gray-400 mb-0.5">#{matchNumber}</span>
+            <span className="block text-xs text-gray-500 mb-0.5">#{matchNumber}</span>
           )}
           <span className="text-gray-800 font-medium text-sm">
             {p1.name} <span className="text-gray-600 font-normal">vs</span> {p2.name}
@@ -243,7 +243,7 @@ function PoolSection({
           <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--hd-inverse-text)" }}>
             Round {round}
           </h3>
-          <div className="grid grid-cols-3 gap-3">
+          <div className={`grid gap-3 ${rounds.get(round)!.length <= 1 ? "grid-cols-1" : rounds.get(round)!.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
             {rounds.get(round)!.map((match) => (
               <MatchCard
                 key={match.id}
@@ -344,7 +344,7 @@ function EliminationMatchCard({
       <div className="flex items-start justify-between gap-2">
         <div>
           {matchNumber && (
-            <span className="block text-xs text-gray-400 mb-0.5">#{matchNumber}</span>
+            <span className="block text-xs text-gray-500 mb-0.5">#{matchNumber}</span>
           )}
           <span className="text-gray-800 font-medium text-sm">
             <span className={match.winnerId === match.player1Id && isScored ? "font-bold" : ""}>
