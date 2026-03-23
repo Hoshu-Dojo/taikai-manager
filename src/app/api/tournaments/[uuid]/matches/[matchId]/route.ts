@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loadTournament, saveTournament } from "@/lib/storage";
 import { isValidUUID } from "@/lib/utils";
+import { checkPasscodeHeader, sanitizeTournament } from "@/lib/auth";
 
 export async function PATCH(
   req: NextRequest,
@@ -13,6 +14,10 @@ export async function PATCH(
   const tournament = await loadTournament(uuid);
   if (!tournament) {
     return NextResponse.json({ error: "Tournament not found." }, { status: 404 });
+  }
+
+  if (!checkPasscodeHeader(req, tournament.passcodeHash, tournament.passcodeSalt)) {
+    return NextResponse.json({ error: "Invalid or missing passcode." }, { status: 401 });
   }
 
   const body = await req.json();
@@ -64,5 +69,5 @@ export async function PATCH(
   }
 
   await saveTournament(tournament);
-  return NextResponse.json(tournament);
+  return NextResponse.json(sanitizeTournament(tournament));
 }

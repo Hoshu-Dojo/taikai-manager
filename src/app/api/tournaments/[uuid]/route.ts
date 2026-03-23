@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loadTournament } from "@/lib/storage";
 import { isValidUUID } from "@/lib/utils";
+import { sanitizeTournament } from "@/lib/auth";
 
 export async function GET(
   _req: NextRequest,
@@ -14,5 +15,5 @@ export async function GET(
   if (!tournament) {
     return NextResponse.json({ error: "Tournament not found." }, { status: 404 });
   }
-  return NextResponse.json(tournament);
+  return NextResponse.json(sanitizeTournament(tournament));
 }

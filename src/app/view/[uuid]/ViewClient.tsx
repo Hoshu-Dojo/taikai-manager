@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Tournament, EliminationMatch } from "@/types";
 import { computeStandings, computeWinReason, StandingRow } from "@/lib/standings";
 import { roundLabel } from "@/lib/bracket";
@@ -87,18 +87,20 @@ function StandingsTable({
 
 // ─── Elimination bracket (read-only tree) ─────────────────────────────────────
 
-const MATCH_W = 200;
-const MATCH_H = 72;
-const SLOT_H = 96;   // vertical space per first-round slot
-const COL_GAP = 48;  // horizontal gap between columns (connector zone)
-const COL_TOTAL = MATCH_W + COL_GAP;
+const COL_GAP = 40;       // fixed gap between columns (connector zone)
+const MIN_MATCH_W = 140;
+const MAX_MATCH_W = 320;
 
 function MatchNode({
   match,
   players,
+  matchW,
+  matchH,
 }: {
   match: EliminationMatch;
   players: Tournament["players"];
+  matchW: number;
+  matchH: number;
 }) {
   const p1 = match.player1Id ? players.find((p) => p.id === match.player1Id) : null;
   const p2 = match.player2Id ? players.find((p) => p.id === match.player2Id) : null;
@@ -111,17 +113,20 @@ function MatchNode({
   const p1Wins = isScored && match.winnerId === match.player1Id;
   const p2Wins = isScored && match.winnerId === match.player2Id;
 
+  const textSize = matchW >= 220 ? "15px" : "13px";
+  const px = Math.round(matchW * 0.06);
+
   if (isBye) {
     const advancer = match.player1Source === "bye" ? p2 : p1;
     const advancerDisplay = advancer ? displayName(advancer) : "TBD";
     return (
       <div
         className="bg-white border border-gray-200 rounded-lg overflow-hidden flex items-center"
-        style={{ width: MATCH_W, height: MATCH_H }}
+        style={{ width: matchW, height: matchH }}
       >
-        <div className="flex items-center justify-between px-3 w-full">
-          <span className="text-sm font-medium text-gray-800 truncate">{advancerDisplay}</span>
-          <span className="text-xs text-gray-400 ml-2 shrink-0">bye</span>
+        <div className="flex items-center justify-between w-full" style={{ paddingLeft: px, paddingRight: px }}>
+          <span className="font-medium text-gray-800 truncate" style={{ fontSize: textSize }}>{advancerDisplay}</span>
+          <span className="text-gray-400 ml-2 shrink-0" style={{ fontSize: "11px" }}>bye</span>
         </div>
       </div>
     );
@@ -130,25 +135,25 @@ function MatchNode({
   return (
     <div
       className="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col"
-      style={{ width: MATCH_W, height: MATCH_H }}
+      style={{ width: matchW, height: matchH }}
     >
-      <div className={`flex items-center justify-between px-3 flex-1 ${p1Wins ? "bg-green-50" : ""}`}>
-        <span className={`text-sm truncate ${p1Wins ? "font-bold text-gray-900" : "text-gray-600"}`}>
+      <div className={`flex items-center justify-between flex-1 ${p1Wins ? "bg-green-50" : ""}`} style={{ paddingLeft: px, paddingRight: px }}>
+        <span className={`truncate ${p1Wins ? "font-bold text-gray-900" : "text-gray-600"}`} style={{ fontSize: textSize }}>
           {p1Display}
         </span>
         {isScored && (
-          <span className={`text-sm font-semibold ml-2 shrink-0 ${p1Wins ? "text-green-600" : "text-gray-400"}`}>
+          <span className={`font-semibold ml-2 shrink-0 ${p1Wins ? "text-green-600" : "text-gray-400"}`} style={{ fontSize: textSize }}>
             {match.flagsP1}
           </span>
         )}
       </div>
       <div className="border-t border-gray-100 shrink-0" />
-      <div className={`flex items-center justify-between px-3 flex-1 ${p2Wins ? "bg-green-50" : ""}`}>
-        <span className={`text-sm truncate ${p2Wins ? "font-bold text-gray-900" : "text-gray-600"}`}>
+      <div className={`flex items-center justify-between flex-1 ${p2Wins ? "bg-green-50" : ""}`} style={{ paddingLeft: px, paddingRight: px }}>
+        <span className={`truncate ${p2Wins ? "font-bold text-gray-900" : "text-gray-600"}`} style={{ fontSize: textSize }}>
           {p2Display}
         </span>
         {isScored && (
-          <span className={`text-sm font-semibold ml-2 shrink-0 ${p2Wins ? "text-green-600" : "text-gray-400"}`}>
+          <span className={`font-semibold ml-2 shrink-0 ${p2Wins ? "text-green-600" : "text-gray-400"}`} style={{ fontSize: textSize }}>
             {match.flagsP2}
           </span>
         )}
@@ -158,26 +163,45 @@ function MatchNode({
 }
 
 function BracketSection({ tournament }: { tournament: Tournament }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerW, setContainerW] = useState(0);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    setContainerW(el.getBoundingClientRect().width);
+    const ro = new ResizeObserver((entries) => {
+      setContainerW(entries[0].contentRect.width);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const matches = tournament.eliminationMatches;
   if (matches.length === 0) return null;
 
   const maxRound = Math.max(...matches.map((m) => m.round));
   const firstRoundCount = matches.filter((m) => m.round === 1).length;
-  const totalW = maxRound * MATCH_W + (maxRound - 1) * COL_GAP;
-  const totalH = firstRoundCount * SLOT_H;
 
-  // Vertical center of a match box given its round and position
+  const matchW = containerW === 0
+    ? MIN_MATCH_W
+    : Math.min(MAX_MATCH_W, Math.max(MIN_MATCH_W, (containerW - (maxRound - 1) * COL_GAP) / maxRound));
+  const matchH = Math.round(matchW * 0.34);
+  const slotH = Math.round(matchW * 0.52);
+  const colTotal = matchW + COL_GAP;
+
+  const totalW = maxRound * matchW + (maxRound - 1) * COL_GAP;
+  const totalH = firstRoundCount * slotH;
+
   function cy(round: number, position: number): number {
     const span = Math.pow(2, round - 1);
-    return ((position - 1) * span + span / 2) * SLOT_H;
+    return ((position - 1) * span + span / 2) * slotH;
   }
 
-  // Left edge of a round's column
   function lx(round: number): number {
-    return (round - 1) * COL_TOTAL;
+    return (round - 1) * colTotal;
   }
 
-  // SVG connector paths: for each pair of round-r matches, draw bracket lines to round r+1
   const connectors: string[] = [];
   for (let r = 1; r < maxRound; r++) {
     const roundMatches = matches
@@ -187,13 +211,12 @@ function BracketSection({ tournament }: { tournament: Tournament }) {
       const m1 = roundMatches[i];
       const m2 = roundMatches[i + 1];
       if (!m1 || !m2) continue;
-      const rx = lx(r) + MATCH_W;          // right edge of current round
+      const rx = lx(r) + matchW;
       const y1 = cy(r, m1.position);
       const y2 = cy(r, m2.position);
-      const mx = rx + COL_GAP / 2;          // midpoint of gap (vertical bar x)
-      const my = (y1 + y2) / 2;             // midpoint y (= center of next-round match)
-      const nl = lx(r + 1);                 // left edge of next round
-      // Two horizontal stubs → vertical bar → horizontal stub to next match
+      const mx = rx + COL_GAP / 2;
+      const my = (y1 + y2) / 2;
+      const nl = lx(r + 1);
       connectors.push(
         `M ${rx} ${y1} H ${mx} V ${y2} M ${rx} ${y2} H ${mx} M ${mx} ${my} H ${nl}`
       );
@@ -201,42 +224,52 @@ function BracketSection({ tournament }: { tournament: Tournament }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div ref={containerRef} className="space-y-3">
       <h2 className="text-lg font-sans font-bold" style={{ color: "var(--hd-inverse-text)" }}>
         Elimination Bracket
       </h2>
-      <div className="overflow-x-auto pb-4">
-        {/* Round labels */}
-        <div className="flex pb-3" style={{ gap: COL_GAP, width: totalW }}>
-          {Array.from({ length: maxRound }, (_, i) => i + 1).map((round) => (
-            <div key={round} className="shrink-0" style={{ width: MATCH_W }}>
-              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--hd-inverse-text)" }}>
-                {roundLabel(round, maxRound)}
-              </p>
+      {containerW > 0 && (
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <div>
+            {/* Round labels */}
+            <div style={{ display: "flex", gap: COL_GAP, width: totalW, paddingBottom: 12 }}>
+              {Array.from({ length: maxRound }, (_, i) => i + 1).map((round) => (
+                <div key={round} style={{ width: matchW, flexShrink: 0 }}>
+                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--hd-inverse-text)" }}>
+                    {roundLabel(round, maxRound)}
+                  </p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        {/* Bracket canvas */}
-        <div style={{ position: "relative", width: totalW, height: totalH }}>
-          <svg
-            width={totalW}
-            height={totalH}
-            style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-          >
-            {connectors.map((d, i) => (
-              <path key={i} d={d} stroke="rgba(66,66,195,0.5)" strokeWidth={1.5} fill="none" />
-            ))}
-          </svg>
-          {matches.map((match) => (
-            <div
-              key={match.id}
-              style={{ position: "absolute", left: lx(match.round), top: cy(match.round, match.position) - MATCH_H / 2 }}
-            >
-              <MatchNode match={match} players={tournament.players} />
+            {/* Bracket canvas */}
+            <div style={{ position: "relative", width: totalW, height: totalH }}>
+              <svg
+                width={totalW}
+                height={totalH}
+                overflow="visible"
+                style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+              >
+                {connectors.map((d, i) => (
+                  <path key={i} d={d} stroke="rgba(255,255,255,0.45)" strokeWidth={1.5} fill="none" />
+                ))}
+              </svg>
+              {matches.map((match) => (
+                <div
+                  key={match.id}
+                  style={{ position: "absolute", left: lx(match.round), top: cy(match.round, match.position) - matchH / 2 }}
+                >
+                  <MatchNode
+                    match={match}
+                    players={tournament.players}
+                    matchW={matchW}
+                    matchH={matchH}
+                  />
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -423,10 +456,10 @@ export default function ViewClient({
   const topLabel = tournament.format === "round_robin" ? "Winner" : "Advances";
 
   return (
-    <main className="min-h-screen p-6 print:bg-white print:p-0" style={{ backgroundColor: "var(--hd-page-bg)" }}>
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* Everything except the final report is hidden when printing */}
-        <div className="print:hidden space-y-6">
+    <main className="min-h-screen print:bg-white" style={{ backgroundColor: "var(--hd-page-bg)" }}>
+      {/* Everything except the final report is hidden when printing */}
+      <div className="print:hidden space-y-6 p-6">
+        <div className="max-w-2xl mx-auto space-y-6">
           {/* Header */}
           <div>
             <h1 className="text-2xl font-serif font-semibold" style={{ color: "var(--hd-inverse-text)" }}>{tournament.name}</h1>
@@ -452,12 +485,14 @@ export default function ViewClient({
               />
             );
           })}
+        </div>
 
-          {/* Elimination bracket */}
-          {tournament.eliminationMatches.length > 0 && tournament.status !== "complete" && (
-            <BracketSection tournament={tournament} />
-          )}
+        {/* Elimination bracket — full width so it fills the screen */}
+        {tournament.eliminationMatches.length > 0 && tournament.status !== "complete" && (
+          <BracketSection tournament={tournament} />
+        )}
 
+        <div className="max-w-2xl mx-auto">
           {/* Last updated / connection status */}
           {pollFailures >= 3 ? (
             <p className="text-center text-xs font-medium rounded px-3 py-2" style={{ backgroundColor: "#7c2d12", color: "#fef2f2" }}>
@@ -469,12 +504,16 @@ export default function ViewClient({
             </p>
           )}
         </div>
-
-        {/* Final report — visible on screen and when printing */}
-        {tournament.status === "complete" && (
-          <FinalReport tournament={tournament} />
-        )}
       </div>
+
+      {/* Final report — visible on screen and when printing */}
+      {tournament.status === "complete" && (
+        <div className="p-6">
+          <div className="max-w-2xl mx-auto">
+            <FinalReport tournament={tournament} />
+          </div>
+        </div>
+      )}
     </main>
   );
 }

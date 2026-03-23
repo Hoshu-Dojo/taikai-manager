@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loadTournament, saveTournament } from "@/lib/storage";
 import { isValidUUID } from "@/lib/utils";
+import { checkPasscodeHeader, sanitizeTournament } from "@/lib/auth";
 
 export async function PATCH(
   req: NextRequest,

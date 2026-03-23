@@ -12,6 +12,10 @@ export interface Tournament {
   pools: Pool[];
   eliminationMatches: EliminationMatch[];
   createdAt: string;
+  /** PBKDF2 hash of the organiser passcode. Never sent to clients. */
+  passcodeHash?: string;
+  /** Random salt for the PBKDF2 hash. Never sent to clients. */
+  passcodeSalt?: string;
 }
 
 export interface Player {

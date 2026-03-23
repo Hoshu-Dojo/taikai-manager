@@ -4,19 +4,21 @@ import { Tournament, Player } from "@/types";
 import { saveTournament, listTournaments } from "@/lib/storage";
 import { buildPools, determineFormat } from "@/lib/pools";
 import { generateSimpleBracket } from "@/lib/bracket";
+import { hashPasscode, sanitizeTournament } from "@/lib/auth";
 
 export async function GET() {
   const tournaments = await listTournaments();
-  return NextResponse.json(tournaments);
+  return NextResponse.json(tournaments.map(sanitizeTournament));
 }
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, date, players: playerData, formatOverride } = body as {
+  const { name, date, players: playerData, formatOverride, passcode } = body as {
     name: string;
     date: string;
     players: { name: string; rank?: string }[];
     formatOverride?: "single_elimination";
+    passcode?: string;
   };
 
   if (!name || !date || !playerData || playerData.length < 4) {
@@ -40,6 +42,12 @@ export async function POST(req: NextRequest) {
   if (invalidPlayer) {
     return NextResponse.json({ error: "Each player must have a name of 80 characters or fewer." }, { status: 400 });
   }
+
+  if (!passcode || typeof passcode !== "string" || passcode.length < 4 || passcode.length > 100) {
+    return NextResponse.json({ error: "A passcode of 4–100 characters is required." }, { status: 400 });
+  }
+
+  const { hash: passcodeHash, salt: passcodeSalt } = hashPasscode(passcode);
 
   const players: Player[] = playerData.map((p) => ({
     id: uuidv4(),
@@ -65,9 +73,11 @@ export async function POST(req: NextRequest) {
     pools,
     eliminationMatches,
     createdAt: new Date().toISOString(),
+    passcodeHash,
+    passcodeSalt,
   };
 
   await saveTournament(tournament);
 
-  return NextResponse.json(tournament, { status: 201 });
+  return NextResponse.json(sanitizeTournament(tournament), { status: 201 });
 }

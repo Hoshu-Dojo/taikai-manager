@@ -3,6 +3,7 @@ import { loadTournament, saveTournament } from "@/lib/storage";
 import { detectCircularTie } from "@/lib/standings";
 import { generatePoolSchedule } from "@/lib/pools";
 import { isValidUUID } from "@/lib/utils";
+import { checkPasscodeHeader, sanitizeTournament } from "@/lib/auth";
 
 export async function POST(
   req: NextRequest,
@@ -22,6 +23,10 @@ export async function POST(
   const tournament = await loadTournament(uuid);
   if (!tournament) {
     return NextResponse.json({ error: "Tournament not found." }, { status: 404 });
+  }
+
+  if (!checkPasscodeHeader(req, tournament.passcodeHash, tournament.passcodeSalt)) {
+    return NextResponse.json({ error: "Invalid or missing passcode." }, { status: 401 });
   }
 
   const pool = tournament.pools.find((p) => p.id === poolId);
@@ -48,5 +53,5 @@ export async function POST(
 
   pool.matches.push(...newMatches);
   await saveTournament(tournament);
-  return NextResponse.json(tournament);
+  return NextResponse.json(sanitizeTournament(tournament));
 }
