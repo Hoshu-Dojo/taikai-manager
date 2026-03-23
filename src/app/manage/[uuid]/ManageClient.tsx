@@ -240,25 +240,45 @@ function PoolSection({
         )}
       </div>
 
-      {roundNumbers.map((round) => (
-        <div key={round} className="space-y-2">
-          <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--hd-inverse-text)" }}>
-            Round {round}
-          </h3>
-          <div className={`grid gap-3 ${rounds.get(round)!.length >= 3 ? "grid-cols-3" : "grid-cols-2"}`}>
-            {rounds.get(round)!.map((match) => (
+      {roundNumbers.every((r) => rounds.get(r)!.length === 1) ? (
+        // All rounds have 1 match — lay them out side by side
+        <div className={`grid gap-3`} style={{ gridTemplateColumns: `repeat(${roundNumbers.length}, 1fr)` }}>
+          {roundNumbers.map((round) => (
+            <div key={round} className="space-y-2">
+              <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--hd-inverse-text)" }}>
+                Round {round}
+              </h3>
               <MatchCard
-                key={match.id}
-                match={match}
+                match={rounds.get(round)![0]}
                 tournamentId={tournament.id}
                 players={tournament.players}
                 onUpdate={onUpdate}
-                matchNumber={matchNumbers.get(match.id)}
+                matchNumber={matchNumbers.get(rounds.get(round)![0].id)}
               />
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      ))}
+      ) : (
+        roundNumbers.map((round) => (
+          <div key={round} className="space-y-2">
+            <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--hd-inverse-text)" }}>
+              Round {round}
+            </h3>
+            <div className={`grid gap-3 ${rounds.get(round)!.length >= 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+              {rounds.get(round)!.map((match) => (
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  tournamentId={tournament.id}
+                  players={tournament.players}
+                  onUpdate={onUpdate}
+                  matchNumber={matchNumbers.get(match.id)}
+                />
+              ))}
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 }
