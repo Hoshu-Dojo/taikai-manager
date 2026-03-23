@@ -7,6 +7,12 @@
   --font-serif: Cormorant, Georgia, "Times New Roman", serif;
 }
 
+input, textarea, select {
+  color-scheme: light;
+  background-color: white;
+  color: var(--hd-primary-text);
+}
+
 :root {
   --hd-page-bg: #060614;
   --hd-secondary-bg: #0A0A2B;
