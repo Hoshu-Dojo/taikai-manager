@@ -78,9 +78,9 @@ export default function CreateTournament() {
   function formatLabel(count: number, advancers: number): string {
     if (count < 4) return "";
     if (count <= 8) return `${count} players → single round-robin`;
-    const pools = count <= 10 ? 2 : count <= 15 ? 3 : count <= 20 ? 4 : count <= 25 ? 5 : 6;
+    const pools = Math.floor(count / 3);
     const adv = advancers === 1 ? "top 1 per pool advances" : `top ${advancers} per pool advance`;
-    return `${count} players → ${pools} pools + elimination bracket · ${adv}`;
+    return `${count} players → ${pools} pools of 3–4 + elimination bracket · ${adv}`;
   }
 
   async function handleSubmit(e: React.FormEvent) {

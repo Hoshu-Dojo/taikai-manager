@@ -13,19 +13,13 @@ export function determineFormat(count: number): TournamentFormat {
 
 /**
  * Determines how many pools to create for a given player count.
- * Keeps pool sizes between 4 and 5.
- * Returns number of pools.
+ * Targets pools of 3; uses pools of 4 only when divisibility requires it.
+ * floor(N/3) pools → the round-robin distribution naturally creates
+ * pools of 3 with at most 2 pools of 4 (when N % 3 > 0).
  */
 export function determinePoolCount(count: number): number {
   if (count <= 8) return 1;
-  // Try to keep pools at 4–5 players each
-  // Prefer fewer pools with 5 over more pools with 4
-  for (let pools = 2; pools <= 6; pools++) {
-    const size = count / pools;
-    if (size >= 4 && size <= 5) return pools;
-  }
-  // Fallback: as many pools of 5 as needed
-  return Math.ceil(count / 5);
+  return Math.floor(count / 3);
 }
 
 /**
@@ -67,7 +61,7 @@ export function assignPools(players: Player[]): Pool[] {
 /**
  * Generates a round-robin match schedule for a single pool using the circle method.
  * Produces N-1 rounds (N = player count), each round covering all pairings exactly once.
- * If N is odd, one player gets a bye each round (not applicable here — pool sizes are 4–5).
+ * If N is odd, one player gets a bye each round (not applicable here — pool sizes are 3–4).
  */
 export function generatePoolSchedule(pool: Pool, players: Player[]): Match[] {
   const playerIds = [...pool.playerIds];

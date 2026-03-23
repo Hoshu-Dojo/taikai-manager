@@ -70,7 +70,7 @@ export default function HelpPage() {
             </Step>
             <Step number={4}>Tap <strong>Create Tournament</strong>. The app determines the format automatically based on how many players you entered.</Step>
             <Note>
-              <strong>Format rules:</strong> 4–8 players → single round-robin (everyone plays everyone). 9 or more players → pools of roughly equal size, with the top player from each pool advancing to a single-elimination bracket.
+              <strong>Format rules:</strong> 4–8 players → single round-robin (everyone plays everyone). 9 or more players → pools of 3 (with a pool of 4 here and there when the numbers require it), with the top player from each pool advancing to a single-elimination bracket.
             </Note>
           </Subsection>
 
