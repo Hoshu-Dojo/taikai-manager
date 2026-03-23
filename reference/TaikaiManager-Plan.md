@@ -247,6 +247,13 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Creating a new tournament sends you the relevant links to your e-mail if you enter it.
 - When a tournament finishes, the final report auto-sends to your e-mail
 
+** Phase X - Backlog** · ⬜ Future · — Not tested
+
+- Ability to search for or retrieve data from past tournaments
+- IAM with accounts and a dashboard of your tournaments.
+- Tournaments that are broken up by rank with good UX (think 100 people across many ranks, but only one test instance.) PROBABLY WON'T
+
+
 
 ---
 
