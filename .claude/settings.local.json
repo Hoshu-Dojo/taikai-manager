@@ -7,7 +7,8 @@
       "Bash(npx next:*)",
       "Bash(node scripts/e2e-test.mjs)",
       "Bash(node scripts/e2e-rr-test.mjs)",
-      "Bash(node scripts/e2e-large-test.mjs)"
+      "Bash(node scripts/e2e-large-test.mjs)",
+      "WebFetch(domain:www.hoshudojo.com)"
     ]
   }
 }
