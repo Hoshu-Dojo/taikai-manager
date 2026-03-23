@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Tournament } from "@/types";
-import { computeStandings } from "@/lib/standings";
+import { computeStandings, computeWinReason } from "@/lib/standings";
 import { displayName } from "@/lib/utils";
 
 const POLL_INTERVAL_MS = 7000;
@@ -21,6 +21,7 @@ function PoolCard({
   const pool = tournament.pools.find((p) => p.id === poolId)!;
   const rows = computeStandings(pool, tournament.players, tournament.id);
   const poolComplete = pool.matches.every((m) => m.complete);
+  const winReason = poolComplete ? computeWinReason(pool, tournament.players, tournament.id) : null;
 
   return (
     <div className="rounded-2xl overflow-hidden border" style={{ backgroundColor: "var(--hd-secondary-bg)", borderColor: "var(--hd-tertiary-bg)" }}>
@@ -59,6 +60,11 @@ function PoolCard({
           ))}
         </tbody>
       </table>
+      {poolComplete && rows.length > 0 && winReason && (
+        <div className="px-6 py-3 border-t text-base" style={{ borderColor: "var(--hd-tertiary-bg)", color: "var(--hd-subtle-text)" }}>
+          {rows[0].playerName} advances — {winReason}
+        </div>
+      )}
     </div>
   );
 }
