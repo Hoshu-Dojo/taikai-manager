@@ -18,6 +18,7 @@ export default function CreateTournament() {
   const [formatOverride, setFormatOverride] = useState<"auto" | "single_elimination">("auto");
   const [bulkMode, setBulkMode] = useState(false);
   const [bulkInput, setBulkInput] = useState("");
+  const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -109,6 +110,10 @@ export default function CreateTournament() {
       setError("All participants need a rank for single elimination tournaments.");
       return;
     }
+    if (!passcode || passcode.length < 4) {
+      setError("Enter a passcode (at least 4 characters).");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -120,6 +125,7 @@ export default function CreateTournament() {
           date,
           formatOverride: isSingleElim ? "single_elimination" : undefined,
           players: players.map((p) => ({ name: p.name, rank: p.rank || undefined })),
+          passcode,
         }),
       });
 
@@ -130,6 +136,7 @@ export default function CreateTournament() {
       }
 
       const tournament = await res.json();
+      sessionStorage.setItem(`tm_passcode_${tournament.id}`, passcode);
       router.push(`/manage/${tournament.id}`);
     } catch {
       setError("Could not connect to the server.");
@@ -326,6 +333,22 @@ export default function CreateTournament() {
                 ))}
               </div>
             </div>
+
+          {/* Passcode */}
+          <div>
+            <label htmlFor="passcode" className="block text-sm font-medium mb-1" style={{ color: "var(--hd-inverse-text)" }}>
+              Organiser passcode
+            </label>
+            <input
+              id="passcode"
+              type="password"
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+              placeholder="Share this with your scoring officials"
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
+            />
+            <p className="mt-1 text-xs text-gray-500">Minimum 4 characters. Officials need this to enter scores.</p>
+          </div>
 
           {error && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">

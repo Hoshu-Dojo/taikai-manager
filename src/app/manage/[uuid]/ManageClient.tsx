@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useContext, createContext } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Tournament, Pool, Match, EliminationMatch } from "@/types";
 import { computeStandings, computeWinReason, detectCircularTie, StandingRow } from "@/lib/standings";
 import { roundLabel } from "@/lib/bracket";
 import { displayName } from "@/lib/utils";
+
+const PasscodeContext = createContext<string>("");
 
 // ─── Flag pips ────────────────────────────────────────────────────────────────
 
@@ -45,6 +47,7 @@ function MatchCard({
   onUpdate: (updated: Tournament) => void;
   matchNumber?: number;
 }) {
+  const passcode = useContext(PasscodeContext);
   const [editing, setEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -61,7 +64,7 @@ function MatchCard({
         `/api/tournaments/${tournamentId}/matches/${match.id}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "x-tournament-passcode": passcode },
           body: JSON.stringify({ flagsPlayer1: opt.p1, flagsPlayer2: opt.p2 }),
         }
       );
@@ -168,6 +171,7 @@ function GenerateRunoffButton({
   tiedPlayers: import("@/types").Player[];
   onUpdate: (updated: Tournament) => void;
 }) {
+  const passcode = useContext(PasscodeContext);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -177,7 +181,7 @@ function GenerateRunoffButton({
     try {
       const res = await fetch(`/api/tournaments/${tournament.id}/generate-runoff`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-tournament-passcode": passcode },
         body: JSON.stringify({ poolId: pool.id }),
       });
       if (!res.ok) {
@@ -454,6 +458,7 @@ function EliminationMatchCard({
   readOnly?: boolean;
   matchNumber?: number;
 }) {
+  const passcode = useContext(PasscodeContext);
   const [editing, setEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -475,7 +480,7 @@ function EliminationMatchCard({
         `/api/tournaments/${tournamentId}/elimination/${match.id}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "x-tournament-passcode": passcode },
           body: JSON.stringify({ flagsP1: opt.p1, flagsP2: opt.p2 }),
         }
       );
@@ -803,6 +808,7 @@ function GenerateBracketButton({
   tournament: Tournament;
   onUpdate: (updated: Tournament) => void;
 }) {
+  const passcode = useContext(PasscodeContext);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -812,7 +818,7 @@ function GenerateBracketButton({
     try {
       const res = await fetch(
         `/api/tournaments/${tournament.id}/generate-bracket`,
-        { method: "POST" }
+        { method: "POST", headers: { "x-tournament-passcode": passcode } }
       );
       if (!res.ok) {
         const data = await res.json();
@@ -854,7 +860,86 @@ export default function ManageClient({
 }) {
   const [tournament, setTournament] = useState<Tournament>(initialTournament);
   const [origin, setOrigin] = useState("");
-  useEffect(() => { setOrigin(window.location.origin); }, []);
+  const [passcode, setPasscode] = useState<string>("");
+  const [gated, setGated] = useState<boolean>(true);
+  const [passcodeInput, setPasscodeInput] = useState("");
+  const [passcodeError, setPasscodeError] = useState("");
+  const [passcodeLoading, setPasscodeLoading] = useState(false);
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+    const stored = sessionStorage.getItem(`tm_passcode_${initialTournament.id}`);
+    if (stored) {
+      setPasscode(stored);
+      setGated(false);
+    }
+  }, [initialTournament.id]);
+
+  async function submitPasscode(e: React.FormEvent) {
+    e.preventDefault();
+    setPasscodeError("");
+    setPasscodeLoading(true);
+    try {
+      const res = await fetch(`/api/tournaments/${initialTournament.id}/verify-passcode`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passcode: passcodeInput }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setPasscodeError(data.error ?? "Incorrect passcode.");
+        setPasscodeLoading(false);
+        return;
+      }
+      sessionStorage.setItem(`tm_passcode_${initialTournament.id}`, passcodeInput);
+      setPasscode(passcodeInput);
+      setGated(false);
+    } catch {
+      setPasscodeError("Could not reach server.");
+    } finally {
+      setPasscodeLoading(false);
+    }
+  }
+
+  if (gated) {
+    return (
+      <main className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: "var(--hd-page-bg)" }}>
+        <div className="w-full max-w-sm space-y-5">
+          <div>
+            <h1 className="text-2xl font-serif font-semibold" style={{ color: "var(--hd-inverse-text)" }}>
+              {initialTournament.name}
+            </h1>
+            <p className="text-sm mt-1" style={{ color: "var(--hd-subtle-text)" }}>
+              Enter the organiser passcode to manage this tournament.
+            </p>
+          </div>
+          <form onSubmit={submitPasscode} className="space-y-3">
+            <input
+              type="password"
+              value={passcodeInput}
+              onChange={(e) => setPasscodeInput(e.target.value)}
+              placeholder="Passcode"
+              autoFocus
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4242C3]"
+            />
+            {passcodeError && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
+                {passcodeError}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={passcodeLoading || !passcodeInput}
+              className="w-full disabled:opacity-50 font-semibold px-6 py-3 rounded-lg transition-colors"
+              style={{ backgroundColor: "var(--hd-accent)", color: "var(--hd-inverse-text)" }}
+            >
+              {passcodeLoading ? "Checking…" : "Enter"}
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
 
   const handleUpdate = useCallback((updated: Tournament) => {
     setTournament(updated);
@@ -880,6 +965,7 @@ export default function ManageClient({
     !tournament.pools.some((p) => detectCircularTie(p, tournament.id) !== null);
 
   return (
+    <PasscodeContext.Provider value={passcode}>
     <main className="min-h-screen p-6 print:bg-white print:p-0" style={{ backgroundColor: "var(--hd-page-bg)" }}>
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Everything except the final report is hidden when printing */}
@@ -959,5 +1045,6 @@ export default function ManageClient({
         )}
       </div>
     </main>
+    </PasscodeContext.Provider>
   );
 }
