@@ -291,9 +291,8 @@ export default function CreateTournament() {
             )}
           </div>
 
-          {/* Format choice — shown once there are enough players */}
-          {players.length >= 4 && (
-            <div>
+          {/* Format choice */}
+          <div>
               <label className="block text-sm font-medium mb-2" style={{ color: "var(--hd-inverse-text)" }}>
                 Format
               </label>
@@ -313,7 +312,7 @@ export default function CreateTournament() {
                     />
                     <div>
                       <span className="text-sm font-medium text-gray-900">
-                        {choice === "auto" ? "Standard format" : "Single elimination bracket"}
+                        {choice === "auto" ? "Round Robin" : "Single elimination bracket"}
                       </span>
                       <p className="text-xs text-gray-500 mt-0.5">
                         {choice === "auto"
@@ -327,7 +326,6 @@ export default function CreateTournament() {
                 ))}
               </div>
             </div>
-          )}
 
           {error && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
