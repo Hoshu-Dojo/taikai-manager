@@ -3,11 +3,11 @@ import { Player, Pool, Match, TournamentFormat } from "@/types";
 
 /**
  * Determines tournament format based on participant count.
- * 4–8:  single round-robin pool, no elimination bracket
- * 9+:   multiple pools + single-elimination finals
+ * 4–5:  single round-robin pool, no elimination bracket
+ * 6+:   multiple pools + single-elimination finals
  */
 export function determineFormat(count: number): TournamentFormat {
-  if (count <= 8) return "round_robin";
+  if (count <= 5) return "round_robin";
   return "pools_elimination";
 }
 
@@ -18,7 +18,7 @@ export function determineFormat(count: number): TournamentFormat {
  * pools of 3 with at most 2 pools of 4 (when N % 3 > 0).
  */
 export function determinePoolCount(count: number): number {
-  if (count <= 8) return 1;
+  if (count <= 5) return 1;
   return Math.floor(count / 3);
 }
 
