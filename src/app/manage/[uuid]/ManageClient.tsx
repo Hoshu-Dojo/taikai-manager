@@ -6,6 +6,8 @@ import { Tournament, Pool, Match, EliminationMatch } from "@/types";
 import { computeStandings, computeWinReason, detectCircularTie, StandingRow } from "@/lib/standings";
 import { roundLabel } from "@/lib/bracket";
 import { displayName } from "@/lib/utils";
+import BracketTree from "@/components/BracketTree";
+import ScorePanel from "@/components/ScorePanel";
 
 const PasscodeContext = createContext<string>("");
 
@@ -427,219 +429,6 @@ function PoolSection({
   );
 }
 
-// ─── Elimination bracket ──────────────────────────────────────────────────────
-
-type EliminationScoreOption = { label: string; p1: number; p2: number };
-
-function eliminationScoreOptions(
-  p1Name: string,
-  p2Name: string
-): EliminationScoreOption[] {
-  return [
-    { label: `${p1Name} wins 3–0`, p1: 3, p2: 0 },
-    { label: `${p1Name} wins 2–1`, p1: 2, p2: 1 },
-    { label: `${p2Name} wins 2–1`, p1: 1, p2: 2 },
-    { label: `${p2Name} wins 3–0`, p1: 0, p2: 3 },
-  ];
-}
-
-function EliminationMatchCard({
-  match,
-  tournamentId,
-  players,
-  onUpdate,
-  readOnly,
-  matchNumber,
-}: {
-  match: EliminationMatch;
-  tournamentId: string;
-  players: Tournament["players"];
-  onUpdate: (updated: Tournament) => void;
-  readOnly?: boolean;
-  matchNumber?: number;
-}) {
-  const passcode = useContext(PasscodeContext);
-  const [editing, setEditing] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
-  const p1 = match.player1Id ? players.find((p) => p.id === match.player1Id) : null;
-  const p2 = match.player2Id ? players.find((p) => p.id === match.player2Id) : null;
-
-  const isBye =
-    match.player1Source === "bye" || match.player2Source === "bye";
-  const isScored = match.flagsP1 !== null && match.flagsP2 !== null;
-  const winnerPlayer = match.winnerId ? players.find((p) => p.id === match.winnerId) : null;
-  const winnerName = winnerPlayer ? displayName(winnerPlayer) : null;
-
-  async function submitScore(opt: EliminationScoreOption) {
-    setSubmitting(true);
-    setError("");
-    try {
-      const res = await fetch(
-        `/api/tournaments/${tournamentId}/elimination/${match.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json", "x-tournament-passcode": passcode },
-          body: JSON.stringify({ flagsP1: opt.p1, flagsP2: opt.p2 }),
-        }
-      );
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error ?? "Something went wrong.");
-        setSubmitting(false);
-        return;
-      }
-      const updated: Tournament = await res.json();
-      setSubmitting(false);
-      setEditing(false);
-      onUpdate(updated);
-    } catch {
-      setError("Could not reach server.");
-      setSubmitting(false);
-    }
-  }
-
-  const p1Display = p1 ? displayName(p1) : (match.player1Source === "bye" ? "Bye" : "TBD");
-  const p2Display = p2 ? displayName(p2) : (match.player2Source === "bye" ? "Bye" : "TBD");
-
-  const showOptions = !readOnly && !isBye && p1 && p2 && (!isScored || editing);
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          {matchNumber && (
-            <span className="block text-xs text-gray-500 mb-0.5">#{matchNumber}</span>
-          )}
-          <span className="text-gray-800 font-medium text-base">
-            <span className={match.winnerId === match.player1Id && isScored ? "font-bold" : ""}>
-              {p1Display}
-            </span>
-            <span className="text-gray-600 font-normal"> vs </span>
-            <span className={match.winnerId === match.player2Id && isScored ? "font-bold" : ""}>
-              {p2Display}
-            </span>
-          </span>
-        </div>
-        {isScored && (
-          <span className="text-sm font-semibold text-green-600 whitespace-nowrap mt-0.5">
-            {match.flagsP1}–{match.flagsP2}
-          </span>
-        )}
-      </div>
-
-      {isBye && (
-        <p className="text-xs text-gray-400">{winnerName} advances (bye)</p>
-      )}
-
-      {!isBye && !isScored && !p1 && !p2 && (
-        <p className="text-xs text-gray-400">Waiting for previous results…</p>
-      )}
-
-      {!isBye && isScored && !editing && (
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-500">{winnerName} wins</span>
-          {!readOnly && (
-            <button
-              onClick={() => { setEditing(true); setError(""); }}
-              className="text-xs hover:underline" style={{ color: "var(--hd-accent)" }}
-            >
-              Edit
-            </button>
-          )}
-        </div>
-      )}
-
-      {showOptions && (
-        <div className="space-y-1">
-          {eliminationScoreOptions(displayName(p1), displayName(p2)).map((opt) => (
-            <button
-              key={opt.label}
-              disabled={submitting}
-              onClick={() => submitScore(opt)}
-              className="w-full text-left px-4 py-4 rounded-xl border border-gray-200 text-gray-800 text-base font-medium transition-colors disabled:opacity-50 hover:border-[#4242C3] hover:bg-[#4242C3]/10 active:bg-[#4242C3]/20"
-            >
-              {opt.label}
-            </button>
-          ))}
-          {editing && (
-            <button
-              disabled={submitting}
-              onClick={() => { setEditing(false); setError(""); }}
-              className="w-full text-sm text-gray-400 hover:text-gray-600 py-2"
-            >
-              Cancel
-            </button>
-          )}
-          {error && <p className="text-xs text-red-500">{error}</p>}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function BracketSection({
-  tournament,
-  onUpdate,
-  readOnly,
-}: {
-  tournament: Tournament;
-  onUpdate: (updated: Tournament) => void;
-  readOnly?: boolean;
-}) {
-  const matches = tournament.eliminationMatches;
-  if (matches.length === 0) return null;
-
-  const maxRound = Math.max(...matches.map((m) => m.round));
-  const firstRoundCount = matches.filter((m) => m.round === 1).length;
-  // Each match box is ~80px tall; total bracket height for consistent alignment
-  const MATCH_H = 88;
-  const containerH = firstRoundCount * MATCH_H;
-
-  return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-sans font-bold" style={{ color: "var(--hd-inverse-text)" }}>Elimination Bracket</h2>
-      <div className="overflow-x-auto pb-2">
-        <div className="flex gap-4 min-w-max w-full">
-          {Array.from({ length: maxRound }, (_, ri) => ri + 1).map((round) => {
-            const roundMatches = matches
-              .filter((m) => m.round === round)
-              .sort((a, b) => a.position - b.position);
-            const label = roundLabel(round, maxRound);
-
-            return (
-              <div key={round} className="flex flex-col flex-1 min-w-[200px]">
-                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--hd-inverse-text)" }}>
-                  {label}
-                </p>
-                <div
-                  className="flex flex-col"
-                  style={{
-                    height: containerH,
-                    justifyContent: "space-around",
-                  }}
-                >
-                  {roundMatches.map((match) => (
-                    <EliminationMatchCard
-                      key={match.id}
-                      match={match}
-                      tournamentId={tournament.id}
-                      players={tournament.players}
-                      onUpdate={onUpdate}
-                      readOnly={readOnly}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Final report ─────────────────────────────────────────────────────────────
 
 function FinalReport({ tournament }: { tournament: Tournament }) {
@@ -901,9 +690,28 @@ export default function ManageClient({
     }
   }
 
+  const [tappedMatchId, setTappedMatchId] = useState<string | null>(null);
+
   const handleUpdate = useCallback((updated: Tournament) => {
     setTournament(updated);
   }, []);
+
+  const handlePanelScore = useCallback(async (matchId: string, flagsP1: number, flagsP2: number) => {
+    setTappedMatchId(null);
+    try {
+      const res = await fetch(`/api/tournaments/${tournament.id}/elimination/${matchId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "x-tournament-passcode": passcode },
+        body: JSON.stringify({ flagsP1, flagsP2 }),
+      });
+      if (res.ok) {
+        const updated: Tournament = await res.json();
+        handleUpdate(updated);
+      }
+    } catch {
+      // silent — organizer can tap again
+    }
+  }, [tournament.id, passcode, handleUpdate]);
 
   if (gated) {
     return (
@@ -1029,10 +837,26 @@ export default function ManageClient({
           {/* Elimination bracket */}
           {tournament.eliminationMatches.length > 0 && (
             <div className="pt-4 border-t" style={{ borderColor: "var(--hd-accent-secondary)" }}>
-              <BracketSection
-                tournament={tournament}
-                onUpdate={handleUpdate}
+              <h2 className="text-sm font-semibold mb-3 uppercase tracking-wide" style={{ color: "var(--hd-subtle-text)" }}>
+                Elimination Bracket
+              </h2>
+              <BracketTree
+                matches={tournament.eliminationMatches}
+                players={tournament.players}
+                totalRounds={Math.max(...tournament.eliminationMatches.map((m) => m.round))}
+                onMatchTap={(id) => setTappedMatchId(id)}
               />
+              {tappedMatchId && (() => {
+                const match = tournament.eliminationMatches.find((m) => m.id === tappedMatchId);
+                return match ? (
+                  <ScorePanel
+                    match={match}
+                    players={tournament.players}
+                    onClose={() => setTappedMatchId(null)}
+                    onScore={handlePanelScore}
+                  />
+                ) : null;
+              })()}
             </div>
           )}
         </div>
