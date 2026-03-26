@@ -1,0 +1,86 @@
+<h2>Bracket Layout Mockup</h2>
+<p class="subtitle">8-player bracket (3 rounds). Scroll right to see the Final. Tap a match to see the score panel concept.</p>
+
+<div style="width:100%;overflow-x:auto;overflow-y:visible;padding-bottom:16px;">
+<svg width="660" height="380" style="display:block;">
+
+  <!-- Round labels -->
+  <text x="0" y="20" font-size="12" font-weight="600" fill="#6b7280" text-anchor="start" font-family="sans-serif">Quarterfinal</text>
+  <text x="220" y="20" font-size="12" font-weight="600" fill="#6b7280" text-anchor="start" font-family="sans-serif">Semifinal</text>
+  <text x="440" y="20" font-size="12" font-weight="600" fill="#6b7280" text-anchor="start" font-family="sans-serif">Final</text>
+
+  <!-- ── ROUND 1 (Quarterfinals) ── -->
+  <!-- Match 1: slots 0 → y=32 -->
+  <rect x="0" y="32" width="180" height="64" rx="6" fill="white" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="10" y="52" font-size="13" fill="#111" font-family="sans-serif">Tanaka Hiroshi</text>
+  <line x1="0" y1="64" x2="180" y2="64" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="10" y="84" font-size="13" fill="#111" font-family="sans-serif">Yamamoto Kenji</text>
+  <text x="165" y="52" font-size="13" font-weight="700" fill="#16a34a" font-family="sans-serif" text-anchor="end">3</text>
+  <text x="165" y="84" font-size="13" fill="#9ca3af" font-family="sans-serif" text-anchor="end">0</text>
+  <rect x="0" y="32" width="180" height="32" rx="6" fill="#f0fdf4" opacity="0.6"/>
+
+  <!-- Match 2: y=122 -->
+  <rect x="0" y="122" width="180" height="64" rx="6" fill="white" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="10" y="142" font-size="13" fill="#111" font-family="sans-serif">Suzuki Akira</text>
+  <line x1="0" y1="154" x2="180" y2="154" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="10" y="174" font-size="13" fill="#111" font-family="sans-serif">Nakamura Ryo</text>
+  <text x="165" y="142" font-size="13" fill="#9ca3af" font-family="sans-serif" text-anchor="end"></text>
+  <text x="165" y="174" font-size="13" fill="#9ca3af" font-family="sans-serif" text-anchor="end"></text>
+
+  <!-- Match 3: y=212 -->
+  <rect x="0" y="212" width="180" height="64" rx="6" fill="white" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="10" y="232" font-size="13" fill="#111" font-family="sans-serif">Watanabe Jun</text>
+  <line x1="0" y1="244" x2="180" y2="244" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="10" y="264" font-size="13" fill="#111" font-family="sans-serif">Ito Masashi</text>
+  <text x="165" y="232" font-size="13" fill="#9ca3af" font-family="sans-serif" text-anchor="end"></text>
+  <text x="165" y="264" font-size="13" fill="#9ca3af" font-family="sans-serif" text-anchor="end"></text>
+
+  <!-- Match 4: y=302 -->
+  <rect x="0" y="302" width="180" height="64" rx="6" fill="white" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="10" y="322" font-size="13" fill="#111" font-family="sans-serif">Kobayashi Taro</text>
+  <line x1="0" y1="334" x2="180" y2="334" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="10" y="354" font-size="13" fill="#111" font-family="sans-serif">Kato Shin</text>
+  <text x="165" y="322" font-size="13" fill="#9ca3af" font-family="sans-serif" text-anchor="end"></text>
+  <text x="165" y="354" font-size="13" fill="#9ca3af" font-family="sans-serif" text-anchor="end"></text>
+
+  <!-- ── CONNECTORS R1 → R2 ── -->
+  <!-- Match 1 → Semifinal top: exit right of match1 (y=64), elbow to semifinal (y=109) -->
+  <polyline points="180,64 200,64 200,109 220,109" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+  <!-- Match 2 → Semifinal top: exit right of match2 (y=154), elbow up to y=109 -->
+  <polyline points="180,154 200,154 200,109 220,109" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+  <!-- Match 3 → Semifinal bottom: exit right (y=244), elbow to y=289 -->
+  <polyline points="180,244 200,244 200,289 220,289" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+  <!-- Match 4 → Semifinal bottom: exit right (y=334), elbow up to y=289 -->
+  <polyline points="180,334 200,334 200,289 220,289" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+
+  <!-- ── ROUND 2 (Semifinals) ── -->
+  <!-- Semifinal top: y=77 (centered between 64 and 154 midpoints → (64+154)/2-32 = 77) -->
+  <rect x="220" y="77" width="180" height="64" rx="6" fill="white" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="230" y="97" font-size="13" fill="#111" font-family="sans-serif">Tanaka Hiroshi</text>
+  <line x1="220" y1="109" x2="400" y2="109" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="230" y="129" font-size="13" fill="#9ca3af" font-family="sans-serif"></text>
+  <rect x="220" y="77" width="180" height="32" rx="6" fill="#f0fdf4" opacity="0.6"/>
+
+  <!-- Semifinal bottom: y=257 (centered between 244 and 334 → (244+334)/2-32=257) -->
+  <rect x="220" y="257" width="180" height="64" rx="6" fill="white" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="230" y="277" font-size="13" fill="#111" font-family="sans-serif"></text>
+  <line x1="220" y1="289" x2="400" y2="289" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="230" y="309" font-size="13" fill="#111" font-family="sans-serif"></text>
+
+  <!-- ── CONNECTORS R2 → R3 ── -->
+  <polyline points="400,109 420,109 420,199 440,199" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+  <polyline points="400,289 420,289 420,199 440,199" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+
+  <!-- ── ROUND 3 (Final) ── -->
+  <!-- Final: y=167 (centered between 109 and 289 → (109+289)/2-32=167) -->
+  <rect x="440" y="167" width="180" height="64" rx="6" fill="white" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="450" y="187" font-size="13" fill="#9ca3af" font-family="sans-serif"></text>
+  <line x1="440" y1="199" x2="620" y2="199" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="450" y="219" font-size="13" fill="#9ca3af" font-family="sans-serif"></text>
+
+</svg>
+</div>
+
+<div style="margin-top:16px;padding:14px;background:#fefce8;border-radius:8px;border:1px solid #fde047;">
+  <p style="margin:0;font-size:13px;color:#713f12;"><strong>Notes:</strong> Match 1 (top left) is complete — Tanaka Hiroshi won 3-0, shown with green highlight and score. Matches 2–4 have players but no scores yet. The semifinal and final show empty slots (your choice B). Connector lines use the elbow shape. Round labels sit above each column.</p>
+</div>

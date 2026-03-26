@@ -7,7 +7,12 @@ export type PlayerRank = typeof RANK_VALUES[number];
 
 const RANK_SET = new Set<string>(RANK_VALUES);
 
-/** Returns a seed value: lower number = stronger seed. Unranked players sort last. */
+/**
+ * Returns a seed value for bracket ordering: lower number = stronger seed.
+ * Recognised ranks: 7D (strongest, value 0) → MK (weakest named rank).
+ * Unrecognised strings sort after MK.
+ * Undefined (no rank provided) sorts last of all.
+ */
 export function rankSeedValue(rank: string | undefined): number {
   if (!rank) return RANK_VALUES.length + 1;
   const idx = RANK_VALUES.indexOf(rank as PlayerRank);

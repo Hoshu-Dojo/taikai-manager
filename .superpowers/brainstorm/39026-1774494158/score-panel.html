@@ -1,0 +1,78 @@
+<h2>Score Panel — Organizer Tap-to-Open</h2>
+<p class="subtitle">What the organizer sees after tapping a match box in the bracket.</p>
+
+<div style="display:flex;gap:32px;flex-wrap:wrap;margin-top:8px;">
+
+  <!-- Phone frame with backdrop + panel -->
+  <div>
+    <p class="label" style="margin-bottom:8px;">Unscored match</p>
+    <div style="width:300px;height:520px;background:#f3f4f6;border-radius:20px;border:2px solid #d1d5db;position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
+      <!-- Simulated bracket behind -->
+      <div style="padding:16px;opacity:0.3;font-size:12px;color:#374151;font-family:sans-serif;">
+        <div style="background:white;border-radius:6px;padding:8px 10px;margin-bottom:6px;border:1px solid #e5e7eb;">
+          <div>Tanaka Hiroshi</div>
+          <hr style="margin:4px 0;border-color:#e5e7eb;"/>
+          <div>Yamamoto Kenji</div>
+        </div>
+        <div style="background:white;border-radius:6px;padding:8px 10px;border:1px solid #2563eb;box-shadow:0 0 0 2px #bfdbfe;">
+          <div>Suzuki Akira</div>
+          <hr style="margin:4px 0;border-color:#e5e7eb;"/>
+          <div>Nakamura Ryo</div>
+        </div>
+      </div>
+      <!-- Dark backdrop -->
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);"></div>
+      <!-- Score panel -->
+      <div style="position:absolute;bottom:0;left:0;right:0;background:white;border-radius:16px 16px 0 0;padding:20px 20px 28px;">
+        <div style="width:36px;height:4px;background:#d1d5db;border-radius:2px;margin:0 auto 16px;"></div>
+        <div style="font-size:11px;color:#6b7280;text-align:center;margin-bottom:4px;font-family:sans-serif;letter-spacing:0.05em;text-transform:uppercase;">Score entry</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="font-size:15px;font-weight:600;font-family:sans-serif;color:#111;">Suzuki Akira</div>
+          <div style="font-size:12px;color:#9ca3af;font-family:sans-serif;">vs</div>
+          <div style="font-size:15px;font-weight:600;font-family:sans-serif;color:#111;text-align:right;">Nakamura Ryo</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button style="padding:16px 0;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;font-size:16px;font-weight:700;color:#111;font-family:sans-serif;cursor:pointer;">3 – 0</button>
+          <button style="padding:16px 0;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;font-size:16px;font-weight:700;color:#111;font-family:sans-serif;cursor:pointer;">2 – 1</button>
+          <button style="padding:16px 0;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;font-size:16px;font-weight:700;color:#111;font-family:sans-serif;cursor:pointer;">1 – 2</button>
+          <button style="padding:16px 0;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;font-size:16px;font-weight:700;color:#111;font-family:sans-serif;cursor:pointer;">0 – 3</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Already scored version -->
+  <div>
+    <p class="label" style="margin-bottom:8px;">Already scored (correction mode)</p>
+    <div style="width:300px;height:520px;background:#f3f4f6;border-radius:20px;border:2px solid #d1d5db;position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
+      <div style="padding:16px;opacity:0.3;font-size:12px;color:#374151;font-family:sans-serif;">
+        <div style="background:#f0fdf4;border-radius:6px;padding:8px 10px;margin-bottom:6px;border:1px solid #e5e7eb;">
+          <div style="color:#16a34a;font-weight:600;">Tanaka Hiroshi · 3</div>
+          <hr style="margin:4px 0;border-color:#e5e7eb;"/>
+          <div style="color:#9ca3af;">Yamamoto Kenji · 0</div>
+        </div>
+      </div>
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;background:white;border-radius:16px 16px 0 0;padding:20px 20px 28px;">
+        <div style="width:36px;height:4px;background:#d1d5db;border-radius:2px;margin:0 auto 16px;"></div>
+        <div style="font-size:11px;color:#6b7280;text-align:center;margin-bottom:4px;font-family:sans-serif;letter-spacing:0.05em;text-transform:uppercase;">Correct score</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="font-size:15px;font-weight:600;font-family:sans-serif;color:#111;">Tanaka Hiroshi</div>
+          <div style="font-size:12px;color:#9ca3af;font-family:sans-serif;">vs</div>
+          <div style="font-size:15px;font-weight:600;font-family:sans-serif;color:#111;text-align:right;">Yamamoto Kenji</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button style="padding:16px 0;background:#f0fdf4;border:2px solid #16a34a;border-radius:10px;font-size:16px;font-weight:700;color:#16a34a;font-family:sans-serif;cursor:pointer;">3 – 0 ✓</button>
+          <button style="padding:16px 0;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;font-size:16px;font-weight:700;color:#111;font-family:sans-serif;cursor:pointer;">2 – 1</button>
+          <button style="padding:16px 0;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;font-size:16px;font-weight:700;color:#111;font-family:sans-serif;cursor:pointer;">1 – 2</button>
+          <button style="padding:16px 0;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;font-size:16px;font-weight:700;color:#111;font-family:sans-serif;cursor:pointer;">0 – 3</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:16px;padding:14px;background:#fefce8;border-radius:8px;border:1px solid #fde047;">
+  <p style="margin:0;font-size:13px;color:#713f12;"><strong>Left:</strong> Unscored match — tapped match is highlighted with a blue outline in the bracket behind the backdrop. Four large score buttons. <strong>Right:</strong> Already-scored match opened for correction — current result (3-0) is highlighted green. Tapping a different button changes the score.</p>
+</div>

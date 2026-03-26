@@ -1,0 +1,44 @@
+<h2>Three Views of the Bracket</h2>
+<p class="subtitle">Each view has different needs. Here's what changing each one means.</p>
+
+<div style="display:flex;flex-direction:column;gap:24px;margin-top:8px;">
+
+  <!-- Public View -->
+  <div style="border:2px solid #4ade80;border-radius:12px;padding:20px;background:#f0fdf4;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+      <span style="background:#4ade80;color:#14532d;font-weight:700;padding:3px 10px;border-radius:20px;font-size:13px;">VIEW 1 — Public spectator</span>
+      <span style="font-size:13px;color:#555;">/view/[uuid]</span>
+    </div>
+    <p style="margin:0 0 8px;font-size:15px;">Read-only. People watch on their phones or on a projected screen. No interaction required.</p>
+    <p style="margin:0;font-size:14px;color:#166534;"><strong>Changing this:</strong> Straightforward — replace the SVG cards with a proper left-to-right tree. This is the core of Phase 9 and has no complications.</p>
+  </div>
+
+  <!-- Projected Display -->
+  <div style="border:2px solid #60a5fa;border-radius:12px;padding:20px;background:#eff6ff;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+      <span style="background:#60a5fa;color:#1e3a5f;font-weight:700;padding:3px 10px;border-radius:20px;font-size:13px;">VIEW 2 — Projected display</span>
+      <span style="font-size:13px;color:#555;">/view/[uuid]/display</span>
+    </div>
+    <p style="margin:0 0 8px;font-size:15px;">Read-only. Same as public view but rendered large for a TV or projector. Also no interaction.</p>
+    <p style="margin:0;font-size:14px;color:#1e40af;"><strong>Changing this:</strong> Same as the public view — just apply the new bracket component with larger text/spacing. Also straightforward.</p>
+  </div>
+
+  <!-- Organizer/Manage View -->
+  <div style="border:2px solid #f97316;border-radius:12px;padding:20px;background:#fff7ed;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+      <span style="background:#f97316;color:#fff;font-weight:700;padding:3px 10px;border-radius:20px;font-size:13px;">VIEW 3 — Organizer score entry</span>
+      <span style="font-size:13px;color:#555;">/manage/[uuid]</span>
+    </div>
+    <p style="margin:0 0 8px;font-size:15px;">This is the unknown unknown. The organizer taps a match to enter the score. Right now, matches are listed as tappable cards — easy to target on a phone.</p>
+    <div style="background:#fef3c7;border-radius:8px;padding:12px;margin:8px 0;">
+      <p style="margin:0 0 4px;font-size:14px;font-weight:600;color:#92400e;">The challenge:</p>
+      <p style="margin:0;font-size:14px;color:#92400e;">In a traditional bracket tree, each match box is small — just big enough to show two names. Tapping one to enter a score would work, but the tap targets get very small on a phone, especially in early rounds with many matches. The current card layout was deliberately made large for courtside use.</p>
+    </div>
+    <p style="margin:0;font-size:14px;color:#c2410c;"><strong>Two ways to handle this:</strong></p>
+    <ol style="margin:8px 0 0;font-size:14px;color:#c2410c;padding-left:20px;">
+      <li style="margin-bottom:6px;"><strong>Tap-to-open:</strong> Show the bracket tree visually, but tapping a match opens a larger score-entry panel (modal or drawer). You see the bracket, tap the match you just finished, and a big UI pops up to record it.</li>
+      <li style="margin-bottom:0;"><strong>Keep the current layout:</strong> Organizer view stays as large tappable cards. Only public + projected views get the new tree. Simpler, but the organizer doesn't see the bracket visually.</li>
+    </ol>
+  </div>
+
+</div>

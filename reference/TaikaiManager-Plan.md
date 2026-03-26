@@ -3,7 +3,7 @@
 **Project:** Hoshu Dojo Taikai Manager
 **Owner:** Tom Groendal
 **Date:** 2026-03-22
-**Status:** Phase 6 next (Phases 0–5 and 8 complete)
+**Status:** Phase 6 next (Phases 0–5, 5.5, and 8 complete)
 
 ---
 
@@ -212,6 +212,8 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - Improved error messages and recovery flows
 - **User documentation page** at `/help` — explains the flag system, tiebreaker logic, tournament formats, organizer vs. public URLs, and how to run a tournament end-to-end
 
+**Phase 5.5 — Unit Testing** · ✅ Complete · ✅ Tested
+
 **Phase 6 — Multilingual** · ⬜ Future · — Not tested
 
 - Language switcher on all pages (English / 日本語 / Español)
@@ -359,6 +361,41 @@ The `player_source` and `advances_to_match_id`/`advances_to_slot` fields define 
 - ~~QR code on organizer screen linking to public display~~
 - ~~Better error handling and recovery~~
 - ~~User documentation page at `/help`~~
+
+### Phase 5.5 — Unit Testing
+
+*Goal: retroactively add unit tests for all core logic functions, bringing the codebase to the baseline you'd have if it had been built with TDD from the start*
+
+**Setup**
+- Install **Vitest** as a dev dependency (simpler than Jest for this Next.js/TypeScript stack)
+- Add a `"test"` script to `package.json`
+- Create a `src/lib/__tests__/` directory to hold all test files
+
+**What gets tested**
+
+All tests target the pure logic functions in `src/lib/` — inputs in, outputs out, no network calls. `storage.ts` (Redis) is explicitly excluded.
+
+`pools.ts`:
+- `determineFormat`: 4 and 5 players → round_robin; 6+ → pools_elimination
+- `determinePoolCount`: correct pool counts for 6, 7, 8, 9, 12 players
+- `generatePoolSchedule`: 3-player pool → 3 matches, all pairs covered exactly once; 4-player pool → 6 matches
+- `assignPools`: all players assigned, pool sizes sum to total, no player in two pools
+
+`standings.ts` (highest priority — this is the most complex code in the project):
+- Player wins outright on flags
+- Two-way tie broken by head-to-head flags
+- Three-way tie where head-to-head is also equal → circular tie detected, run-off required
+- Run-off matches present and complete → standings resolve correctly
+- Run-off is itself circular → another run-off needed
+- `detectCircularTie`: returns the tied group when a run-off is needed, null otherwise
+
+`bracket.ts`:
+- `seededSlots`: correct slot order for size 4 and size 8
+- `roundLabel`: "Final", "Semifinal", "Quarterfinal", and "Round N" for various inputs
+- `generateSimpleBracket`: correct number of matches, byes propagate correctly for non-power-of-2 counts
+
+**Definition of done**
+All tests pass (`npm test` exits clean). No production code is changed — this phase adds tests only.
 
 ### Phase 6 — Multilingual
 

@@ -45,18 +45,24 @@ export default function CreateTournament() {
     const lines = bulkInput.split("\n").map((l) => l.trim()).filter(Boolean);
     const added: string[] = [];
     const skipped: string[] = [];
+    const unknownRanks: string[] = [];
     const next = [...players];
     for (const line of lines) {
       const commaIdx = line.lastIndexOf(",");
       let pName: string;
-      let pRank: string;
+      let pRank = "";
+      let rankUnrecognised = false;
       if (commaIdx !== -1) {
         pName = line.slice(0, commaIdx).trim();
         const rawRank = line.slice(commaIdx + 1).trim();
-        pRank = normalizeRank(rawRank) ?? rawRank;
+        const normalized = normalizeRank(rawRank);
+        if (rawRank && normalized === undefined) {
+          rankUnrecognised = true;
+        } else {
+          pRank = normalized ?? "";
+        }
       } else {
         pName = line;
-        pRank = "";
       }
       if (!pName) continue;
       if (next.some((p) => p.name === pName)) {
@@ -64,16 +70,21 @@ export default function CreateTournament() {
       } else {
         next.push({ name: pName, rank: pRank });
         added.push(pName);
+        if (rankUnrecognised) unknownRanks.push(pName);
       }
     }
     setPlayers(next);
     setBulkInput("");
     setBulkMode(false);
-    if (skipped.length > 0) {
-      setError(`Added ${added.length}. Skipped duplicates: ${skipped.join(", ")}.`);
-    } else {
-      setError("");
+    const parts: string[] = [];
+    if (skipped.length > 0) parts.push(`Skipped duplicates: ${skipped.join(", ")}.`);
+    if (unknownRanks.length > 0) {
+      parts.push(
+        `Unrecognised rank for ${unknownRanks.join(", ")} — added without a rank and will be seeded last. ` +
+        `Accepted formats: 7D–MK, 5-dan, 3kyu, 無級.`
+      );
     }
+    setError(parts.length > 0 ? parts.join(" ") : "");
   }
 
   function removePlayer(playerName: string) {

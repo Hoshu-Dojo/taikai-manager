@@ -18,7 +18,12 @@
       "Bash(grep:*)",
       "Bash(npx tsc:*)",
       "Bash(gh repo:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(find /c/Users/thoma/code/taikai-manager -type f -name jest.config.* -o -name vitest.config.* -o -name *.test.* -o -name *.spec.*)",
+      "Bash(wc -l /c/Users/thoma/code/taikai-manager/src/lib/*.ts /c/Users/thoma/code/taikai-manager/src/types/*.ts)",
+      "Bash(find /c/Users/thoma/code/taikai-manager/src -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec wc -l {} +)",
+      "Bash(wc -l /c/Users/thoma/code/taikai-manager/src/app/api/tournaments/[uuid]/route.ts /c/Users/thoma/code/taikai-manager/src/app/api/tournaments/[uuid]/generate-bracket/route.ts)",
+      "mcp__perplexity__perplexity_search"
     ]
   }
 }
