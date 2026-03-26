@@ -697,7 +697,6 @@ export default function ManageClient({
   }, []);
 
   const handlePanelScore = useCallback(async (matchId: string, flagsP1: number, flagsP2: number) => {
-    setTappedMatchId(null);
     try {
       const res = await fetch(`/api/tournaments/${tournament.id}/elimination/${matchId}`, {
         method: "PATCH",
@@ -706,10 +705,11 @@ export default function ManageClient({
       });
       if (res.ok) {
         const updated: Tournament = await res.json();
+        setTappedMatchId(null);
         handleUpdate(updated);
       }
     } catch {
-      // silent — organizer can tap again
+      // panel stays open — organizer can tap again
     }
   }, [tournament.id, passcode, handleUpdate]);
 
