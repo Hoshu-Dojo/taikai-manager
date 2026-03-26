@@ -85,6 +85,7 @@ export default function BracketTree({
       <svg
         viewBox={`0 0 ${svgW} ${svgH}`}
         width={svgW}
+        height={svgH}
         style={{ display: "block", minWidth: svgW }}
       >
         {/* Round labels */}
