@@ -158,6 +158,11 @@ export default function HelpPage() {
           </Note>
         </Section>
 
+        {/* ── ABOUT ──────────────────────────────────────────── */}
+        <Section id="about" title="About">
+          <p>Note: this was a fun &ldquo;learning to code with Claude&rdquo; project by Tom Groendal. If you find this and have serious intentions to use it for a Taikai, it probably needs a little work first. Reach out to <a href="mailto:thomasgroendal@hoshudojo.com" className="underline" style={{ color: "var(--hd-accent-secondary)" }}>thomasgroendal@hoshudojo.com</a> first :)</p>
+        </Section>
+
         {/* Back link */}
         <div className="pb-6">
           <Link href="/" className="text-sm hover:underline" style={{ color: "var(--hd-accent-secondary)" }}>
