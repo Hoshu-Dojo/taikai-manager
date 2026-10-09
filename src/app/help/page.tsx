@@ -142,6 +142,20 @@ export default function HelpPage() {
           <Subsection title="What the flag counts mean">
             <p>In the standings, the <strong>Flags</strong> column shows total flags a player has collected across all their matches — not the number of wins. A player who wins two matches 3–0 has 6 flags; one who wins two matches 2–1 has 4 flags. Both have two wins, but the first ranks higher.</p>
           </Subsection>
+
+          <Note>
+            For the full official rules, see the{" "}
+            <a
+              href="/jodo-shiai-regulations-en.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+              style={{ color: "var(--hd-accent-secondary)" }}
+            >
+              Jodo Shiai Regulations (PDF)
+            </a>
+            .
+          </Note>
         </Section>
 
         {/* Back link */}
